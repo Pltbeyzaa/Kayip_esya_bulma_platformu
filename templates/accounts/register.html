@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kayıt Ol - Kayıp Eşya Platformu{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white text-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Kayıt Ol
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" id="registerForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">Ad</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.first_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Soyad</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.last_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Kullanıcı Adı</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.username.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">E-posta</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">Telefon Numarası (Opsiyonel)</label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.phone_number.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">Şifre</label>
+                        {{ form.password1 }}
+                        <div class="form-text">Şifreniz en az 8 karakter olmalıdır.</div>
+                        {% if form.password1.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.password1.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">Şifre Tekrar</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.password2.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                        <label class="form-check-label" for="agreeTerms">
+                            <a href="#" class="text-primary">Kullanım şartlarını</a> kabul ediyorum.
+                        </label>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Kayıt Ol
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <p class="mb-0">Zaten hesabınız var mı? 
+                        <a href="{% url 'login' %}" class="text-primary">Giriş yapın</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const password1 = document.querySelector('input[name="password1"]');
+    const password2 = document.querySelector('input[name="password2"]');
+    const emailInput = document.querySelector('input[name="email"]');
+    const phoneInput = document.querySelector('input[name="phone_number"]');
+    
+    // Password strength indicator
+    password1.addEventListener('input', function() {
+        const password = this.value;
+        const strength = getPasswordStrength(password);
+        updatePasswordStrength(strength);
+    });
+    
+    // Password confirmation
+    password2.addEventListener('input', function() {
+        if (this.value !== password1.value) {
+            showFieldError(this, 'Şifreler eşleşmiyor.');
+        } else {
+            clearFieldError(this);
+        }
+    });
+    
+    // Phone number formatting
+    phoneInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        if (value.length > 0) {
+            if (value.startsWith('0')) {
+                value = value.substring(1);
+            }
+            if (value.length >= 10) {
+                value = value.substring(0, 10);
+            }
+        }
+        this.value = value;
+    });
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Email validation
+        if (!emailInput.value.trim()) {
+            showFieldError(emailInput, 'E-posta adresi gereklidir.');
+            isValid = false;
+        } else if (!isValidEmail(emailInput.value)) {
+            showFieldError(emailInput, 'Geçerli bir e-posta adresi girin.');
+            isValid = false;
+        } else {
+            clearFieldError(emailInput);
+        }
+        
+        // Password validation
+        if (!password1.value.trim()) {
+            showFieldError(password1, 'Şifre gereklidir.');
+            isValid = false;
+        } else if (password1.value.length < 8) {
+            showFieldError(password1, 'Şifre en az 8 karakter olmalıdır.');
+            isValid = false;
+        } else {
+            clearFieldError(password1);
+        }
+        
+        // Password confirmation
+        if (password2.value !== password1.value) {
+            showFieldError(password2, 'Şifreler eşleşmiyor.');
+            isValid = false;
+        } else {
+            clearFieldError(password2);
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    function getPasswordStrength(password) {
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[a-z]/.test(password)) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+        return strength;
+    }
+    
+    function updatePasswordStrength(strength) {
+        const strengthDiv = document.getElementById('passwordStrength');
+        if (!strengthDiv) {
+            const strengthDiv = document.createElement('div');
+            strengthDiv.id = 'passwordStrength';
+            strengthDiv.className = 'mt-2';
+            password1.parentNode.appendChild(strengthDiv);
+        }
+        
+        const strengthText = ['Çok zayıf', 'Zayıf', 'Orta', 'Güçlü', 'Çok güçlü'];
+        const strengthColors = ['danger', 'warning', 'info', 'success', 'success'];
+        
+        document.getElementById('passwordStrength').innerHTML = `
+            <div class="progress" style="height: 5px;">
+                <div class="progress-bar bg-${strengthColors[strength-1] || 'secondary'}" 
+                     style="width: ${(strength/5)*100}%"></div>
+            </div>
+            <small class="text-${strengthColors[strength-1] || 'secondary'}">${strengthText[strength-1] || 'Şifre girin'}</small>
+        `;
+    }
+    
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    function showFieldError(field, message) {
+        clearFieldError(field);
+        field.classList.add('is-invalid');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+    }
+    
+    function clearFieldError(field) {
+        field.classList.remove('is-invalid');
+        const errorDiv = field.parentNode.querySelector('.invalid-feedback');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profil - Kayıp Eşya Platformu{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3" width="150" height="150" alt="Profil Fotoğrafı">
+                {% else %}
+                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px;">
+                        <i class="fas fa-user fa-3x text-white"></i>
+                    </div>
+                {% endif %}
+                <h5 class="card-title">{{ user.first_name }} {{ user.last_name }}</h5>
+                <p class="text-muted">@{{ user.username }}</p>
+                <p class="text-muted">{{ user.email }}</p>
+                {% if user.phone_number %}
+                    <p class="text-muted">{{ user.phone_number }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>
+                    Profil Bilgileri
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad</label>
+                            <input type="text" class="form-control" value="{{ user.first_name }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Soyad</label>
+                            <input type="text" class="form-control" value="{{ user.last_name }}" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">E-posta</label>
+                        <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Telefon Numarası</label>
+                        <input type="text" class="form-control" value="{{ user.phone_number|default:'Belirtilmemiş' }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Üyelik Tarihi</label>
+                        <input type="text" class="form-control" value="{{ user.date_joined|date:'d.m.Y H:i' }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Son Giriş</label>
+                        <input type="text" class="form-control" value="{{ user.last_login|date:'d.m.Y H:i'|default:'Hiç giriş yapılmamış' }}" readonly>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    İstatistikler
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-search fa-2x text-primary mb-2"></i>
+                            <h6>Kayıp İlanlarım</h6>
+                            <h4 class="text-primary">0</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-hand-holding fa-2x text-success mb-2"></i>
+                            <h6>Bulunan Eşyalar</h6>
+                            <h4 class="text-success">0</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <i class="fas fa-check-circle fa-2x text-warning mb-2"></i>
+                            <h6>Başarılı Eşleşmeler</h6>
+                            <h4 class="text-warning">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

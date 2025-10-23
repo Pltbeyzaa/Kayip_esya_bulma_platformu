@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ana Sayfa - Kayıp Eşya Platformu{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="hero-section text-center py-5">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-search text-primary me-3"></i>
+                Kayıp Eşya Bulma Platformu
+            </h1>
+            <p class="lead mb-4">
+                Kaybettiğiniz eşyalarınızı bulun veya bulduğunuz eşyaları sahiplerine ulaştırın.
+            </p>
+            {% if not user.is_authenticated %}
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Kayıt Ol
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Giriş Yap
+                    </a>
+                </div>
+            {% else %}
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>
+                        Kayıp İlan Ver
+                    </a>
+                    <a href="#" class="btn btn-success btn-lg">
+                        <i class="fas fa-hand-holding me-2"></i>
+                        Bulunan Eşya Bildir
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Kayıp Eşya Ara</h5>
+                <p class="card-text">Kaybettiğiniz eşyalarınızı platformda arayın ve bulun.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="fas fa-bullhorn fa-3x text-success mb-3"></i>
+                <h5 class="card-title">İlan Ver</h5>
+                <p class="card-text">Kayıp eşyanız için detaylı ilan oluşturun.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="fas fa-hand-holding fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Bulunan Eşya</h5>
+                <p class="card-text">Bulduğunuz eşyaları sahiplerine ulaştırın.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h3>Hoş Geldiniz, {{ user.first_name|default:user.username }}!</h3>
+        <p>Platform özelliklerini kullanmaya başlayabilirsiniz.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
