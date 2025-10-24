@@ -3,6 +3,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Kayıp Eşya Bulma Platformu{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,21 +11,51 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-search me-2"></i>
-                Kayıp Eşya Platformu
+                <span class="brand-icon">?</span>
+                <span class="brand-text">FindUs</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Sol taraf - Ana navigasyon -->
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Ana Sayfa</a>
+                        <a class="nav-link" href="{% url 'home' %}">
+                            <i class="fas fa-home me-1"></i>
+                            Ana Sayfa
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showComingSoon('Kayıp Eşya İlanı')">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Kayıp Eşya İlanı
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showComingSoon('Bulunan Eşya İlanı')">
+                            <i class="fas fa-hand-holding me-1"></i>
+                            Bulunan Eşya İlanı
+                        </a>
                     </li>
                 </ul>
+                
+                <!-- Orta - Arama Çubuğu -->
+                <div class="navbar-search">
+                    <form class="d-flex" role="search" id="searchForm">
+                        <div class="search-container">
+                            <input class="form-control search-input" type="search" placeholder="İlan ara..." aria-label="Search" id="searchInput">
+                            <button class="btn search-btn" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Sağ taraf - Kullanıcı işlemleri -->
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
@@ -32,18 +63,28 @@
                                 <i class="fas fa-user me-1"></i>
                                 {{ user.first_name|default:user.username }}
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}">Profil</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                    <i class="fas fa-user-circle me-2"></i>Profil
+                                </a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Çıkış Yap</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                                </a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Giriş Yap</a>
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>
+                                Giriş Yap
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">Kayıt Ol</a>
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus me-1"></i>
+                                Kayıt Ol
+                            </a>
                         </li>
                     {% endif %}
                 </ul>
@@ -65,7 +106,7 @@
         {% endblock %}
     </main>
 
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="py-4 mt-5">
         <div class="container text-center">
             <p>&copy; 2024 Kayıp Eşya Bulma Platformu. Tüm hakları saklıdır.</p>
         </div>
@@ -73,6 +114,101 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Header için JavaScript -->
+    <script>
+        function showComingSoon(feature) {
+            // Modern yeşil tema ile uyumlu toast mesajı
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>${feature}</strong> özelliği yakında eklenecek!
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Animasyon ile göster
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // 3 saniye sonra kaldır
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+        
+        // Arama çubuğu için JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            
+            if (searchForm && searchInput) {
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const searchTerm = searchInput.value.trim();
+                    
+                    if (searchTerm.length < 2) {
+                        showSearchError('En az 2 karakter giriniz.');
+                        return;
+                    }
+                    
+                    // Arama işlemi - şimdilik toast mesajı
+                    showSearchResult(searchTerm);
+                });
+                
+                // Arama input'u için focus efektleri
+                searchInput.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                searchInput.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            }
+        });
+        
+        function showSearchResult(term) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification search-result';
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas fa-search me-2"></i>
+                    <strong>"${term}"</strong> için arama yapılıyor...
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 2000);
+        }
+        
+        function showSearchError(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification search-error';
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 2000);
+        }
+    </script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

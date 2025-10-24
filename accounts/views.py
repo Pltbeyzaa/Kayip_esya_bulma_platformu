@@ -3,12 +3,34 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 from .forms import UserRegistrationForm, UserLoginForm
+from .models import ItemPost
 
 
 def home(request):
-    """Ana sayfa"""
-    return render(request, 'accounts/home.html')
+    """Ana sayfa - İlan akışı"""
+    # Tüm aktif ilanları getir
+    posts = ItemPost.objects.filter(status='active').select_related('user')
+    
+    # Sayfalama
+    paginator = Paginator(posts, 12)  # Sayfa başına 12 ilan
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # İstatistikler
+    total_posts = ItemPost.objects.filter(status='active').count()
+    lost_posts = ItemPost.objects.filter(status='active', post_type='lost').count()
+    found_posts = ItemPost.objects.filter(status='active', post_type='found').count()
+    
+    context = {
+        'page_obj': page_obj,
+        'total_posts': total_posts,
+        'lost_posts': lost_posts,
+        'found_posts': found_posts,
+    }
+    
+    return render(request, 'accounts/home.html', context)
 
 
 def register_view(request):

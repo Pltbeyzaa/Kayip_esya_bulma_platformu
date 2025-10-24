@@ -6,9 +6,9 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
-        <div class="card shadow">
-            <div class="card-header bg-success text-white text-center">
-                <h4 class="mb-0">
+        <div class="card shadow fade-in">
+            <div class="card-header text-center">
+                <h4 class="mb-0 text-primary-green">
                     <i class="fas fa-user-plus me-2"></i>
                     Kayıt Ol
                 </h4>
@@ -105,7 +105,7 @@
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="agreeTerms" required>
                         <label class="form-check-label" for="agreeTerms">
-                            <a href="#" class="text-primary">Kullanım şartlarını</a> kabul ediyorum.
+                            <a href="#" class="text-primary-green">Kullanım şartlarını</a> kabul ediyorum.
                         </label>
                     </div>
                     
@@ -119,7 +119,7 @@
                 
                 <div class="text-center mt-3">
                     <p class="mb-0">Zaten hesabınız var mı? 
-                        <a href="{% url 'login' %}" class="text-primary">Giriş yapın</a>
+                        <a href="{% url 'login' %}" class="text-primary-green">Giriş yapın</a>
                     </p>
                 </div>
             </div>

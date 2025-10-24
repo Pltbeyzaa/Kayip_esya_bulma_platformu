@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turkish Character Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #334155 0%, #475569 50%, #64748b 100%);
+            color: white;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .test-title {
+            color: #93c5fd;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>Turkish Character Display Test</h1>
+    
+    <div class="test-section">
+        <h2 class="test-title">Basic Turkish Characters</h2>
+        <div class="test-item">
+            <strong>Lowercase:</strong> ç ğ ı ö ş ü
+        </div>
+        <div class="test-item">
+            <strong>Uppercase:</strong> Ç Ğ İ Ö Ş Ü
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="test-title">Sample Post Titles</h2>
+        <div class="test-item">
+            <strong>Kayıp Gözlük - Antalya Muratpaşa</strong>
+        </div>
+        <div class="test-item">
+            <strong>Bulunan Çanta - Bursa Osmangazi</strong>
+        </div>
+        <div class="test-item">
+            <strong>Kayıp Cüzdan - İstanbul Kadıköy</strong>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="test-title">Sample Descriptions</h2>
+        <div class="test-item">
+            <strong>Description 1:</strong> Güneş gözlüğümü plajda kaybettim. Ray-Ban marka.
+        </div>
+        <div class="test-item">
+            <strong>Description 2:</strong> Osmangazi metroda siyah çanta buldum. İçinde kitaplar var.
+        </div>
+        <div class="test-item">
+            <strong>Description 3:</strong> Çankaya'da anahtar buldum. Sahibi arıyorsa iletişime geçsin.
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="test-title">Location Names</h2>
+        <div class="test-item">
+            <strong>Cities:</strong> İstanbul, Ankara, İzmir, Antalya, Bursa, Adana
+        </div>
+        <div class="test-item">
+            <strong>Districts:</strong> Kadıköy, Çankaya, Konak, Muratpaşa, Osmangazi, Seyhan
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="test-title">Currency and Numbers</h2>
+        <div class="test-item">
+            <strong>Rewards:</strong> 200₺, 500₺, 1000₺
+        </div>
+        <div class="test-item">
+            <strong>Phone:</strong> +90 555 123 45 67
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="test-title">Status Check</h2>
+        <div class="test-item">
+            <span id="encoding-status">Checking encoding...</span>
+        </div>
+    </div>
+    
+    <script>
+        // Test JavaScript Turkish character support
+        function testTurkishChars() {
+            const testString = "Kayıp Gözlük - Antalya Muratpaşa";
+            const statusElement = document.getElementById('encoding-status');
+            
+            try {
+                // Test if we can properly handle Turkish characters
+                const encoded = encodeURIComponent(testString);
+                const decoded = decodeURIComponent(encoded);
+                
+                if (decoded === testString) {
+                    statusElement.innerHTML = '<span class="success">✓ Turkish character encoding is working correctly!</span>';
+                } else {
+                    statusElement.innerHTML = '<span class="error">✗ Turkish character encoding has issues</span>';
+                }
+            } catch (e) {
+                statusElement.innerHTML = '<span class="error">✗ Error testing Turkish characters: ' + e.message + '</span>';
+            }
+        }
+        
+        // Run test when page loads
+        document.addEventListener('DOMContentLoaded', testTurkishChars);
+    </script>
+</body>
+</html>

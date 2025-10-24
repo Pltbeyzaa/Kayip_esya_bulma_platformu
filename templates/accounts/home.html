@@ -1,82 +1,287 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Ana Sayfa - Kayıp Eşya Platformu{% endblock %}
+{% block title %}Ana Sayfa - FindUs{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="hero-section text-center py-5">
-            <h1 class="display-4 mb-4">
-                <i class="fas fa-search text-primary me-3"></i>
-                Kayıp Eşya Bulma Platformu
-            </h1>
-            <p class="lead mb-4">
-                Kaybettiğiniz eşyalarınızı bulun veya bulduğunuz eşyaları sahiplerine ulaştırın.
-            </p>
-            {% if not user.is_authenticated %}
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-user-plus me-2"></i>
-                        Kayıt Ol
-                    </a>
-                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
-                        <i class="fas fa-sign-in-alt me-2"></i>
-                        Giriş Yap
-                    </a>
-                </div>
-            {% else %}
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="#" class="btn btn-primary btn-lg">
-                        <i class="fas fa-plus me-2"></i>
-                        Kayıp İlan Ver
-                    </a>
-                    <a href="#" class="btn btn-success btn-lg">
-                        <i class="fas fa-hand-holding me-2"></i>
-                        Bulunan Eşya Bildir
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
 
+
+<!-- İlan Akışı -->
 <div class="row mt-5">
-    <div class="col-md-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-                <i class="fas fa-search fa-3x text-primary mb-3"></i>
-                <h5 class="card-title">Kayıp Eşya Ara</h5>
-                <p class="card-text">Kaybettiğiniz eşyalarınızı platformda arayın ve bulun.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-                <i class="fas fa-bullhorn fa-3x text-success mb-3"></i>
-                <h5 class="card-title">İlan Ver</h5>
-                <p class="card-text">Kayıp eşyanız için detaylı ilan oluşturun.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-                <i class="fas fa-hand-holding fa-3x text-warning mb-3"></i>
-                <h5 class="card-title">Bulunan Eşya</h5>
-                <p class="card-text">Bulduğunuz eşyaları sahiplerine ulaştırın.</p>
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary-green mb-0">
+                <i class="fas fa-stream me-2"></i>
+                Son İlanlar
+            </h3>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="filterPosts('all')">
+                    <i class="fas fa-list me-1"></i>Tümü
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="filterPosts('lost')">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Kayıp
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="filterPosts('found')">
+                    <i class="fas fa-hand-holding me-1"></i>Bulunan
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-{% if user.is_authenticated %}
-<div class="row mt-5">
+<!-- İlan Kartları -->
+<div class="row" id="postsContainer">
+    {% for post in page_obj %}
+    <div class="col-lg-4 col-md-6 mb-4 post-card" data-type="{{ post.post_type }}">
+        <div class="post-item">
+            <!-- Tweet Header -->
+            <div class="tweet-header">
+                <div class="tweet-avatar">
+                    {{ post.user.first_name|first|default:post.user.username|first|upper }}
+                </div>
+                <div class="tweet-user-info">
+                    <h6 class="tweet-username">{{ post.user.first_name|default:post.user.username }}</h6>
+                    <p class="tweet-handle">@{{ post.user.username }}</p>
+                </div>
+                <div class="tweet-timestamp">
+                    {% if post.days_ago == 0 %}
+                    Bugün
+                    {% elif post.days_ago == 1 %}
+                    Dün
+                    {% else %}
+                    {{ post.days_ago }} gün önce
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tweet Content -->
+            <div class="tweet-content">
+                <!-- Tweet Badge -->
+                <div class="tweet-badge {% if post.post_type == 'lost' %}lost{% else %}found{% endif %}">
+                    <i
+                        class="fas fa-{% if post.post_type == 'lost' %}exclamation-triangle{% else %}hand-holding{% endif %}"></i>
+                    {{ post.get_post_type_display }}
+                    {% if post.is_urgent %}
+                    <span class="tweet-badge urgent ms-2">
+                        <i class="fas fa-fire"></i>Acil
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Tweet Text -->
+                <p class="tweet-text">{{ post.title }}</p>
+                <p class="tweet-text">{{ post.description|truncatewords:30 }}</p>
+
+                <!-- Tweet Location -->
+                <div class="tweet-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    {{ post.city }}{% if post.district %}, {{ post.district }}{% endif %}
+                </div>
+
+                <!-- Tweet Image -->
+                {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="post-image">
+                {% else %}
+                <div class="post-image-placeholder">
+                    <i class="fas fa-image fa-3x"></i>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Tweet Actions - FIXED VERSION -->
+            <div style="
+                position: absolute !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                background: linear-gradient(135deg, #1e293b, #334155) !important;
+                border-top: 2px solid rgba(255, 255, 255, 0.2) !important;
+                padding: 15px !important;
+                display: flex !important;
+                gap: 10px !important;
+                z-index: 1000 !important;
+                border-radius: 0 0 16px 16px !important;
+            ">
+                <button onclick="showPostDetails({{ post.id }})" style="
+                    flex: 1 !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    color: rgba(255, 255, 255, 0.9) !important;
+                    padding: 12px 8px !important;
+                    border-radius: 8px !important;
+                    cursor: pointer !important;
+                    font-weight: 600 !important;
+                    font-size: 14px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    gap: 8px !important;
+                    transition: all 0.3s ease !important;
+                " onmouseover="this.style.background='rgba(96, 165, 250, 0.2)'; this.style.borderColor='#60a5fa'; this.style.color='white';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.color='rgba(255, 255, 255, 0.9)';">
+                    <i class="fas fa-eye"></i>
+                    <span>Detay</span>
+                </button>
+                <button onclick="contactUser({{ post.id }})" style="
+                    flex: 1 !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    color: rgba(255, 255, 255, 0.9) !important;
+                    padding: 12px 8px !important;
+                    border-radius: 8px !important;
+                    cursor: pointer !important;
+                    font-weight: 600 !important;
+                    font-size: 14px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    gap: 8px !important;
+                    transition: all 0.3s ease !important;
+                " onmouseover="this.style.background='rgba(96, 165, 250, 0.2)'; this.style.borderColor='#60a5fa'; this.style.color='white';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.color='rgba(255, 255, 255, 0.9)';">
+                    <i class="fas fa-phone"></i>
+                    <span>İletişim</span>
+                </button>
+                <button onclick="sharePost({{ post.id }})" style="
+                    flex: 1 !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    color: rgba(255, 255, 255, 0.9) !important;
+                    padding: 12px 8px !important;
+                    border-radius: 8px !important;
+                    cursor: pointer !important;
+                    font-weight: 600 !important;
+                    font-size: 14px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    gap: 8px !important;
+                    transition: all 0.3s ease !important;
+                " onmouseover="this.style.background='rgba(96, 165, 250, 0.2)'; this.style.borderColor='#60a5fa'; this.style.color='white';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.color='rgba(255, 255, 255, 0.9)';">
+                    <i class="fas fa-share"></i>
+                    <span>Paylaş</span>
+                </button>
+                <button onclick="savePost({{ post.id }})" style="
+                    flex: 1 !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    color: rgba(255, 255, 255, 0.9) !important;
+                    padding: 12px 8px !important;
+                    border-radius: 8px !important;
+                    cursor: pointer !important;
+                    font-weight: 600 !important;
+                    font-size: 14px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    gap: 8px !important;
+                    transition: all 0.3s ease !important;
+                " onmouseover="this.style.background='rgba(96, 165, 250, 0.2)'; this.style.borderColor='#60a5fa'; this.style.color='white';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.color='rgba(255, 255, 255, 0.9)';">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Kaydet</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
     <div class="col-12">
-        <h3>Hoş Geldiniz, {{ user.first_name|default:user.username }}!</h3>
-        <p>Platform özelliklerini kullanmaya başlayabilirsiniz.</p>
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Henüz ilan bulunmuyor</h4>
+            <p class="text-muted">İlk ilanı siz verin!</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Sayfalama -->
+{% if page_obj.has_other_pages %}
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="İlan sayfalama">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // İlan filtreleme
+    function filterPosts(type) {
+        const cards = document.querySelectorAll('.post-card');
+        cards.forEach(card => {
+            if (type === 'all' || card.dataset.type === type) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // İlan detayları
+    function showPostDetails(postId) {
+        showComingSoon('İlan Detayları');
+    }
+
+    // Kullanıcı ile iletişim
+    function contactUser(postId) {
+        showComingSoon('İletişim Özelliği');
+    }
+    
+    // İlan paylaşma
+    function sharePost(postId) {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Kayıp Eşya İlanı',
+                text: 'Bu ilanı paylaş',
+                url: window.location.href
+            });
+        } else {
+            showComingSoon('Paylaşım Özelliği');
+        }
+    }
+    
+    // İlan kaydetme
+    function savePost(postId) {
+        showComingSoon('Kaydetme Özelliği');
+    }
+</script>
 {% endblock %}
