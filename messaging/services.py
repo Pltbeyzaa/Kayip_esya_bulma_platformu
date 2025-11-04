@@ -7,7 +7,7 @@ from firebase_admin import credentials, messaging
 from typing import List, Dict, Optional
 from django.conf import settings
 from django.utils import timezone
-from .models import ChatRoom, Message, Notification, UserDevice, ChatInvitation
+from .models import ChatRoom, Message, Notification, UserDevice, ChatInvitation, MessageRead, ChatRoomMembership
 
 
 class FirebaseService:
@@ -20,6 +20,14 @@ class FirebaseService:
     def _initialize_firebase(self):
         """Firebase'i başlat"""
         try:
+            # Zaten initialize edilmişse tekrar etme
+            try:
+                self.app = firebase_admin.get_app()
+                return
+            except ValueError:
+                # Henüz initialize edilmemiş, devam et
+                pass
+            
             if settings.FIREBASE_CREDENTIALS_PATH:
                 cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
                 self.app = firebase_admin.initialize_app(cred)
@@ -126,7 +134,11 @@ class ChatService:
             )
             
             # Oluşturan kişiyi admin olarak ekle
-            room.participants.add(created_by_id, through_defaults={'role': 'admin'})
+            ChatRoomMembership.objects.create(
+                room=room,
+                user_id=created_by_id,
+                role='admin'
+            )
             
             return room
             

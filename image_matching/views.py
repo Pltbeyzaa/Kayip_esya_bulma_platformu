@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.conf import settings
 import json
 import os
 from .services import ImageMatchingService
@@ -36,8 +37,9 @@ class ImageMatchingAPIView(View):
             description = request.POST.get('description', '')
             
             # Geçici dosya olarak kaydet
-            temp_path = f"temp/{image_file.name}"
-            os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+            temp_dir = settings.MEDIA_ROOT / 'temp'
+            os.makedirs(temp_dir, exist_ok=True)
+            temp_path = os.path.join(temp_dir, image_file.name)
             
             with open(temp_path, 'wb') as f:
                 for chunk in image_file.chunks():
@@ -116,8 +118,9 @@ def upload_and_match_image(request):
         description = request.data.get('description', '')
         
         # Geçici dosya olarak kaydet
-        temp_path = f"temp/{image_file.name}"
-        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+        temp_dir = settings.MEDIA_ROOT / 'temp'
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_path = os.path.join(temp_dir, image_file.name)
         
         with open(temp_path, 'wb') as f:
             for chunk in image_file.chunks():
@@ -138,8 +141,10 @@ def upload_and_match_image(request):
                 'error': process_result['error']
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Benzer görüntüleri bul
-        matches = matching_service.find_similar_images(temp_path, top_k=10)
+        # Benzer görüntüleri bul ve eşleşmeleri kaydet
+        matches = matching_service.find_similar_images(
+            temp_path, top_k=10, source_vector_id=process_result.get('vector_id')
+        )
         
         return Response({
             'success': True,

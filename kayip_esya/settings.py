@@ -28,8 +28,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'accounts',
-    # Gelişmiş özellikler - şimdilik devre dışı
-    # 'image_matching',
+    # Görüntü eşleştirme servisi (Milvus)
+    'image_matching',
     # 'location_services',
     # 'messaging',
 ]

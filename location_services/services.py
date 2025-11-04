@@ -5,8 +5,6 @@ import math
 import googlemaps
 from typing import List, Tuple, Dict, Optional
 from django.conf import settings
-from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import Distance
 from .models import Location, LostItem, FoundItem, LocationMatch, SearchRadius
 
 

@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kayıp Eşya İlanı Oluştur - FindUs{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
+            <div class="card-header text-center" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color); padding: 1.5rem;">
+                <h4 class="mb-0 text-primary-green">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Kayıp Eşya İlanı Oluştur
+                </h4>
+                <p class="text-muted mb-0 mt-2" style="font-size: 0.9rem;">Kayıp eşyanızı bulmak için detaylı bilgi verin</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" id="lostItemForm">
+                    {% csrf_token %}
+                    
+                    <!-- Başlık -->
+                    <div class="mb-4">
+                        <label for="{{ form.title.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-heading me-2"></i>Başlık <span class="text-danger">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-muted);">Örn: Kayıp Telefon - İzmir Konak</div>
+                    </div>
+                    
+                    <!-- Kategori / Özellikler -->
+                    <div class="mb-4">
+                        <label class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-tags me-2"></i>İlan Kategorisi ve Özellikleri
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.main_category.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Kategori</label>
+                                {{ form.main_category }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.sub_category.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Alt Kategori</label>
+                                {{ form.sub_category }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.brand.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Marka</label>
+                                {{ form.brand }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.color.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Renk</label>
+                                {{ form.color }}
+                            </div>
+                        </div>
+                        <div class="form-text" style="color: var(--text-muted);">Kategori bilgileri kayıtta açıklamaya eklenecektir.</div>
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div class="mb-4">
+                        <label for="{{ form.description.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-align-left me-2"></i>Açıklama <span class="text-danger">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-muted);">Eşyanız hakkında detaylı bilgi veriniz (renk, marka, model, özellikler vb.)</div>
+                    </div>
+                    
+                    <!-- Şehir ve İlçe -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.city.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-city me-2"></i>Şehir <span class="text-danger">*</span>
+                            </label>
+                            {{ form.city }}
+                            {% if form.city.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.city.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.district.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-map-marker-alt me-2"></i>İlçe
+                            </label>
+                            {{ form.district }}
+                            {% if form.district.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.district.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Konum -->
+                    <div class="mb-4">
+                        <label for="{{ form.location.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-map-pin me-2"></i>Konum <span class="text-danger">*</span>
+                        </label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.location.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-muted);">Örn: Konak Meydanı, Kadıköy Sahil, Taksim Meydanı</div>
+                    </div>
+                    
+                    <!-- İletişim Bilgileri -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.contact_phone.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-phone me-2"></i>İletişim Telefonu <span class="text-danger">*</span>
+                            </label>
+                            {{ form.contact_phone }}
+                            {% if form.contact_phone.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.contact_phone.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.contact_email.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-envelope me-2"></i>İletişim E-posta
+                            </label>
+                            {{ form.contact_email }}
+                            {% if form.contact_email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.contact_email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Fotoğraf -->
+                    <div class="mb-4">
+                        <label for="{{ form.image.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-image me-2"></i>Eşya Fotoğrafı
+                        </label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.image.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-muted);">Eşyanızın fotoğrafını yükleyiniz (JPG, PNG - Maksimum 5MB)</div>
+                    </div>
+                    
+                    <!-- Acil İlan -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.is_urgent }}
+                            <label class="form-check-label" for="{{ form.is_urgent.id_for_label }}" style="color: var(--text-primary);">
+                                <i class="fas fa-fire me-2 text-warning"></i>Acil İlan olarak işaretle
+                            </label>
+                        </div>
+                        {% if form.is_urgent.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.is_urgent.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-muted);">Önemli eşyalar için acil ilan olarak işaretleyebilirsiniz</div>
+                    </div>
+                    
+                    <!-- Form Hataları -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Butonlar -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-success" style="background: var(--primary-green); border: none;">
+                            <i class="fas fa-paper-plane me-2"></i>İlanı Oluştur
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    background: var(--dark-surface) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.form-control, .form-select {
+    background: var(--dark-surface-light) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background: var(--dark-surface-light) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25) !important;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.form-check-input {
+    background-color: var(--dark-surface-light);
+    border: 1px solid var(--border-color);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.btn-outline-secondary {
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.btn-outline-secondary:hover {
+    background: var(--dark-surface-light);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+</style>
+<script>
+// Ana kategoriye göre alt kategori öneri placeholder'ını değiştir
+document.addEventListener('DOMContentLoaded', function() {
+  const mainCat = document.getElementById('mainCategory');
+  const subInput = document.getElementById('{{ form.sub_category.id_for_label }}');
+  if (!mainCat) return;
+  const placeholders = {
+    'electronics': 'Örn: Telefon, Kulaklık, Tablet',
+    'accessories': 'Örn: Cüzdan, Gözlük, Saat',
+    'documents': 'Örn: Kimlik, Ehliyet, Pasaport',
+    'clothing': 'Örn: Mont, Çanta, Ayakkabı',
+    'others': 'Örn: Anahtar, Diğer'
+  };
+  mainCat.addEventListener('change', function(){
+    const ph = placeholders[this.value] || 'Örn: Telefon, Cüzdan, Gözlük';
+    if (subInput) subInput.setAttribute('placeholder', ph);
+  });
+});
+</script>
+{% endblock %}
+

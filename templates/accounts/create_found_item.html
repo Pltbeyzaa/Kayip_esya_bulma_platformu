@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulunan Eşya İlanı Oluştur - FindUs{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
+            <div class="card-header text-center" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color); padding: 1.5rem;">
+                <h4 class="mb-0 text-primary-green">
+                    <i class="fas fa-hand-holding me-2"></i>
+                    Bulunan Eşya İlanı Oluştur
+                </h4>
+                <p class="text-muted mb-0 mt-2" style="font-size: 0.9rem;">Bulduğunuz eşyanın sahibine ulaşması için bilgi verin</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" id="foundItemForm">
+                    {% csrf_token %}
+
+                    <!-- Kategori / Özellikler -->
+                    <div class="mb-4">
+                        <label class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-tags me-2"></i>İlan Kategorisi ve Özellikleri
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.main_category.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Kategori</label>
+                                {{ form.main_category }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.sub_category.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Alt Kategori</label>
+                                {{ form.sub_category }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.brand.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Marka</label>
+                                {{ form.brand }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.color.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Renk</label>
+                                {{ form.color }}
+                            </div>
+                        </div>
+                        <div class="form-text" style="color: var(--text-muted);">Kategori bilgileri kayıtta açıklamaya eklenecektir.</div>
+                    </div>
+
+                    <!-- Başlık -->
+                    <div class="mb-4">
+                        <label for="{{ form.title.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-heading me-2"></i>Başlık <span class="text-danger">*</span>
+                        </label>
+                        {{ form.title }}
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div class="mb-4">
+                        <label for="{{ form.description.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-align-left me-2"></i>Açıklama <span class="text-danger">*</span>
+                        </label>
+                        {{ form.description }}
+                    </div>
+
+                    <!-- Şehir ve İlçe -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.city.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-city me-2"></i>Şehir <span class="text-danger">*</span>
+                            </label>
+                            {{ form.city }}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.district.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-map-marker-alt me-2"></i>İlçe
+                            </label>
+                            {{ form.district }}
+                        </div>
+                    </div>
+
+                    <!-- Konum -->
+                    <div class="mb-4">
+                        <label for="{{ form.location.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-map-pin me-2"></i>Konum <span class="text-danger">*</span>
+                        </label>
+                        {{ form.location }}
+                    </div>
+
+                    <!-- İletişim Bilgileri -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.contact_phone.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-phone me-2"></i>İletişim Telefonu <span class="text-danger">*</span>
+                            </label>
+                            {{ form.contact_phone }}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.contact_email.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-envelope me-2"></i>İletişim E-posta
+                            </label>
+                            {{ form.contact_email }}
+                        </div>
+                    </div>
+
+                    <!-- Fotoğraf -->
+                    <div class="mb-4">
+                        <label for="{{ form.image.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-image me-2"></i>Eşya Fotoğrafı
+                        </label>
+                        {{ form.image }}
+                    </div>
+
+                    <!-- Butonlar -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-success" style="background: var(--primary-green); border: none;">
+                            <i class="fas fa-paper-plane me-2"></i>İlanı Oluştur
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card { background: var(--dark-surface) !important; border: 1px solid var(--border-color) !important; }
+.form-control, .form-select { background: var(--dark-surface-light) !important; border: 1px solid var(--border-color) !important; color: var(--text-primary) !important; }
+.form-control:focus, .form-select:focus { background: var(--dark-surface-light) !important; border-color: var(--primary-green) !important; color: var(--text-primary) !important; box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25) !important; }
+.btn-outline-secondary { border-color: var(--border-color); color: var(--text-secondary); }
+.btn-outline-secondary:hover { background: var(--dark-surface-light); border-color: var(--border-color); color: var(--text-primary); }
+</style>
+
+<script>
+// Aynı dinamik placeholder mantığını burada da kullan
+document.addEventListener('DOMContentLoaded', function() {
+  const mainCat = document.getElementById('mainCategory');
+  const subInput = document.getElementById('{{ form.sub_category.id_for_label }}');
+  if (!mainCat) return;
+  const placeholders = {
+    'electronics': 'Örn: Telefon, Kulaklık, Tablet',
+    'accessories': 'Örn: Cüzdan, Gözlük, Saat',
+    'documents': 'Örn: Kimlik, Ehliyet, Pasaport',
+    'clothing': 'Örn: Mont, Çanta, Ayakkabı',
+    'others': 'Örn: Anahtar, Diğer'
+  };
+  mainCat.addEventListener('change', function(){
+    const ph = placeholders[this.value] || 'Örn: Anahtar, Cüzdan, Saat';
+    if (subInput) subInput.setAttribute('placeholder', ph);
+  });
+});
+</script>
+{% endblock %}
+
+

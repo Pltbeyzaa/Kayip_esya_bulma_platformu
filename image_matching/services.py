@@ -3,14 +3,17 @@ Görüntü eşleştirme servisleri
 """
 import os
 import numpy as np
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from django.conf import settings
-from pymilvus import connections, Collection, CollectionSchema, FieldSchema, DataType
+from pymilvus import connections, Collection, CollectionSchema, FieldSchema, DataType, utility
 from google.cloud import vision
 import cv2
 from PIL import Image
 import io
 import base64
+from .models import ImageVector, ImageMatch
+from django.utils import timezone
+from kayip_esya.mongodb import get_collection
 
 
 class MilvusService:
@@ -25,19 +28,36 @@ class MilvusService:
         self.dimension = 2048  # Google Cloud Vision feature vector boyutu
         
     def connect(self):
-        """Milvus'a bağlan"""
-        try:
-            connections.connect(
-                alias="default",
-                host=self.host,
-                port=self.port,
-                user=self.user if self.user else None,
-                password=self.password if self.password else None
-            )
-            return True
-        except Exception as e:
-            print(f"Milvus connection error: {e}")
-            return False
+        """Milvus'a bağlan (retry ve host fallback ile)"""
+        import time
+
+        hosts_to_try = [self.host]
+        if self.host == 'localhost':
+            hosts_to_try.append('127.0.0.1')
+
+        last_error = None
+        for host_candidate in hosts_to_try:
+            for _ in range(10):  # ~10 deneme, toplam ~10-15 sn bekleme
+                try:
+                    connections.connect(
+                        alias="default",
+                        host=host_candidate,
+                        port=self.port,
+                        user=self.user if self.user else None,
+                        password=self.password if self.password else None
+                    )
+                    # Sunucu hazır mı diye kontrol et
+                    try:
+                        _ = utility.get_server_version()
+                    except Exception:
+                        time.sleep(1)
+                        continue
+                    return True
+                except Exception as e:
+                    last_error = e
+                    time.sleep(1)
+        print(f"Milvus connection error: {last_error}")
+        return False
     
     def create_collection(self):
         """Koleksiyon oluştur"""
@@ -56,6 +76,10 @@ class MilvusService:
             
             schema = CollectionSchema(fields, "Image vectors collection")
             
+            # Koleksiyon var mı kontrol et
+            if utility.has_collection(self.collection_name):
+                return True
+
             # Koleksiyon oluştur
             collection = Collection(self.collection_name, schema)
             
@@ -286,9 +310,31 @@ class ImageMatchingService:
             )
             
             if success:
+                # Django DB: ImageVector kaydet
+                image_vector = ImageVector.objects.create(
+                    user_id=user_id,
+                    image_path=image_path,
+                    vector_id=vector_id,
+                    description=description
+                )
+                # MongoDB log
+                try:
+                    logs = get_collection('image_processing_logs')
+                    logs.insert_one({
+                        'event': 'process_image',
+                        'user_id': user_id,
+                        'vector_id': vector_id,
+                        'image_path': image_path,
+                        'description': description,
+                        'features_count': len(features),
+                        'created_at': timezone.now().isoformat()
+                    })
+                except Exception:
+                    pass
                 return {
                     'success': True,
                     'vector_id': vector_id,
+                    'image_vector_id': str(image_vector.id),
                     'features_count': len(features)
                 }
             else:
@@ -297,7 +343,7 @@ class ImageMatchingService:
         except Exception as e:
             return {'success': False, 'error': str(e)}
     
-    def find_similar_images(self, image_path: str, top_k: int = 10) -> List[dict]:
+    def find_similar_images(self, image_path: str, top_k: int = 10, source_vector_id: Optional[str] = None) -> List[dict]:
         """Benzer görüntüleri bul"""
         try:
             # Özellik vektörünü çıkar
@@ -307,7 +353,41 @@ class ImageMatchingService:
             
             # Benzer vektörleri ara
             matches = self.milvus.search_similar(features, top_k)
-            
+            # MongoDB log (search)
+            try:
+                logs = get_collection('image_processing_logs')
+                logs.insert_one({
+                    'event': 'find_similar_images',
+                    'image_path': image_path,
+                    'top_k': top_k,
+                    'results': len(matches),
+                    'created_at': timezone.now().isoformat()
+                })
+            except Exception:
+                pass
+
+            # Eşleşmeleri veritabanına yaz (varsa kaynak vector)
+            if source_vector_id:
+                try:
+                    source_vector = ImageVector.objects.get(vector_id=source_vector_id)
+                    for m in matches:
+                        try:
+                            target_vector = ImageVector.objects.filter(vector_id=m.get('id')).first()
+                            if not target_vector:
+                                continue
+                            ImageMatch.objects.get_or_create(
+                                source_vector=source_vector,
+                                target_vector=target_vector,
+                                defaults={
+                                    'similarity_score': float(m.get('similarity', 0.0)),
+                                    'match_confidence': max(0.0, min(1.0, float(m.get('similarity', 0.0))))
+                                }
+                            )
+                        except Exception:
+                            continue
+                except ImageVector.DoesNotExist:
+                    pass
+
             return matches
             
         except Exception as e:

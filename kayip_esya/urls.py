@@ -9,8 +9,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    # Gelişmiş özellikler - şimdilik devre dışı
-    # path('image-matching/', include('image_matching.urls')),
+    # Görüntü eşleştirme API'leri
+    path('image-matching/', include('image_matching.urls')),
     # path('location/', include('location_services.urls')),
     # path('messaging/', include('messaging.urls')),
     path('', include('accounts.urls')),
@@ -18,4 +18,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Static files serving in development
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+    urlpatterns += staticfiles_urlpatterns()
