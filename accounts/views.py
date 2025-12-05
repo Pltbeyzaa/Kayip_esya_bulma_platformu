@@ -10,16 +10,26 @@ from .models import ItemPost
 from .services import upsert_item_post_to_mongo
 
 
-def home(request):
-    """Ana sayfa - İlan akışı"""
-    if not request.user.is_authenticated:
-        # Oturum açmamış kullanıcılar için bulanık ilanlar göster
-        posts = ItemPost.objects.filter(status='active').select_related('user')[:6]
-        return render(request, 'accounts/home.html', {
-            'show_landing': True,
-            'blurred_posts': posts
-        })
+def landing(request):
+    """Landing sayfası - Giriş yapmayan kullanıcılar için"""
+    # Oturum açmamış kullanıcılar için bulanık ilanlar göster (merak uyandırmak için)
+    # Tüm aktif ilanları göster (testuser dahil)
+    posts = (
+        ItemPost.objects
+        .filter(status='active')
+        .select_related('user')
+        .order_by('?')[:15]  # Rastgele 15 ilan
+    )
+    
+    return render(request, 'accounts/home.html', {
+        'show_landing': True,
+        'blurred_posts': posts
+    })
 
+
+@login_required
+def home(request):
+    """Ana sayfa - İlan akışı (Sadece giriş yapmış kullanıcılar)"""
     # Tüm aktif ilanları getir (örnek verileri hariç tut)
     # Not: Örnek veriler management command ile 'testuser' kullanıcısı altında oluşturuluyor
     posts = (
@@ -56,6 +66,18 @@ def register_view(request):
     
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
+        # KVKK ve Kullanım Şartları onay kontrolü
+        agree_terms = request.POST.get('agree_terms')
+        agree_privacy = request.POST.get('agree_privacy')
+        
+        if not agree_terms:
+            messages.error(request, 'Kayıt olmak için kullanım şartlarını kabul etmelisiniz.')
+            return render(request, 'accounts/register.html', {'form': form})
+        
+        if not agree_privacy:
+            messages.error(request, 'Kayıt olmak için gizlilik politikasını kabul etmelisiniz.')
+            return render(request, 'accounts/register.html', {'form': form})
+        
         if form.is_valid():
             user = form.save()
             login(request, user)
@@ -97,7 +119,7 @@ def logout_view(request):
     """Kullanıcı çıkış"""
     logout(request)
     messages.info(request, 'Başarıyla çıkış yaptınız.')
-    return redirect('home')
+    return redirect('landing')
 
 
 @login_required
@@ -156,8 +178,9 @@ def create_post(request):
     return render(request, 'accounts/create_post.html')
 
 
+@login_required
 def list_lost_posts(request):
-    """Sadece kayıp ilanları listele"""
+    """Sadece kayıp ilanları listele (Sadece giriş yapmış kullanıcılar)"""
     posts = (
         ItemPost.objects
         .filter(status='active', post_type='lost')
@@ -174,8 +197,9 @@ def list_lost_posts(request):
     })
 
 
+@login_required
 def list_found_posts(request):
-    """Sadece bulunan ilanları listele"""
+    """Sadece bulunan ilanları listele (Sadece giriş yapmış kullanıcılar)"""
     posts = (
         ItemPost.objects
         .filter(status='active', post_type='found')
@@ -196,6 +220,16 @@ def post_detail(request, post_id: int):
     """İlan detay sayfası"""
     post = get_object_or_404(ItemPost.objects.select_related('user'), id=post_id)
     return render(request, 'accounts/post_detail.html', { 'post': post })
+
+
+def terms_of_service(request):
+    """Kullanım Şartları sayfası"""
+    return render(request, 'accounts/terms_of_service.html')
+
+
+def privacy_policy(request):
+    """KVKK Gizlilik Politikası sayfası"""
+    return render(request, 'accounts/privacy_policy.html')
 
 
 @login_required

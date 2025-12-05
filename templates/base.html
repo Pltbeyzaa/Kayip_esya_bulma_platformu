@@ -13,7 +13,7 @@
 <body class="{% block body_class %}{% endblock %}">
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
+            <a class="navbar-brand" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}">
                 <span class="brand-icon">?</span>
                 <span class="brand-text">FindUs</span>
             </a>
@@ -23,6 +23,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <!-- Sol taraf - Ana navigasyon -->
                 <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'home' %}">
                             <i class="fas fa-home me-1"></i>
@@ -41,6 +42,7 @@
                             Bulunan İlanlar
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
                 
                 <!-- Orta - Arama Çubuğu -->
@@ -57,13 +59,13 @@
                 
                 <!-- Sağ taraf - Kullanıcı işlemleri -->
                 <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
                     <li class="nav-item me-2">
                         <a class="nav-link" href="{% url 'create_post' %}">
                             <i class="fas fa-plus me-1"></i>
                             İlan Ekle
                         </a>
                     </li>
-                    {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user me-1"></i>
@@ -112,11 +114,13 @@
         {% endblock %}
     </main>
 
+    {% if not request.path == '/accounts/login/' and not request.path == '/accounts/register/' %}
     <footer class="py-4">
         <div class="container text-center">
             <p>&copy; 2024 Kayıp Eşya Bulma Platformu. Tüm hakları saklıdır.</p>
         </div>
     </footer>
+    {% endif %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>

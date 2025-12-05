@@ -1,66 +1,108 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Giriş Yap - Kayıp Eşya Platformu{% endblock %}
+{% block title %}Giriş Yap - FindUs{% endblock %}
+
+{% block body_class %}login-page{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow fade-in">
-            <div class="card-header text-center">
-                <h4 class="mb-0 text-primary-green">
-                    <i class="fas fa-sign-in-alt me-2"></i>
-                    Giriş Yap
-                </h4>
+<div class="login-container">
+    <div class="login-wrapper">
+        <div class="login-card">
+            <!-- Logo ve Başlık -->
+            <div class="login-header">
+                <div class="login-logo">
+                    <span class="login-question-mark">?</span>
+                    <span class="login-brand">FINDUS</span>
+                </div>
+                <h2 class="login-title">Hoş Geldiniz</h2>
+                <p class="login-subtitle">Hesabınıza giriş yapın</p>
             </div>
-            <div class="card-body p-4">
-                <form method="post" id="loginForm">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">E-posta</label>
+
+            <!-- Form -->
+            <form method="post" id="loginForm" class="login-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>E-posta
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
                         {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.email.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Şifre</label>
+                    {% if form.email.errors %}
+                        <div class="error-message">
+                            {% for error in form.email.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Şifre
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <i class="fas fa-lock"></i>
+                        </span>
                         {{ form.password }}
-                        {% if form.password.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.password.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                        </button>
                     </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="rememberMe">
-                        <label class="form-check-label" for="rememberMe">
+                    {% if form.password.errors %}
+                        <div class="error-message">
+                            {% for error in form.password.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-options">
+                    <div class="remember-me">
+                        <input type="checkbox" class="custom-checkbox" id="rememberMe" name="remember_me">
+                        <label for="rememberMe" class="checkbox-label">
+                            <span class="checkbox-custom"></span>
                             Beni hatırla
                         </label>
                     </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-sign-in-alt me-2"></i>
-                            Giriş Yap
-                        </button>
-                    </div>
-                </form>
-                
-                <div class="text-center mt-3">
-                    <p class="mb-0">Hesabınız yok mu? 
-                        <a href="{% url 'register' %}" class="text-primary-green">Kayıt olun</a>
-                    </p>
+                    <a href="#" class="forgot-password">Şifremi unuttum</a>
                 </div>
+                
+                <button type="submit" class="login-button">
+                    <span>Giriş Yap</span>
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </form>
+            
+            <!-- Kayıt Ol Linki -->
+            <div class="login-footer">
+                <p class="signup-text">
+                    Hesabınız yok mu?
+                    <a href="{% url 'register' %}" class="signup-link">
+                        <span>Kayıt olun</span>
+                        <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </p>
             </div>
+
+            <!-- Form Hataları -->
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                    <div class="error-alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -72,6 +114,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('loginForm');
     const emailInput = document.querySelector('input[name="email"]');
     const passwordInput = document.querySelector('input[name="password"]');
+    
+    // Input focus efektleri
+    const inputs = document.querySelectorAll('.login-form input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+        
+        // Başlangıçta değer varsa focused ekle
+        if (input.value) {
+            input.parentElement.classList.add('focused');
+        }
+    });
     
     // Form validation
     form.addEventListener('submit', function(e) {
@@ -108,20 +169,41 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function showFieldError(field, message) {
         clearFieldError(field);
-        field.classList.add('is-invalid');
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'invalid-feedback';
-        errorDiv.textContent = message;
-        field.parentNode.appendChild(errorDiv);
+        field.classList.add('error');
+        const formGroup = field.closest('.form-group');
+        let errorDiv = formGroup.querySelector('.error-message');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            formGroup.appendChild(errorDiv);
+        }
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>' + message;
     }
     
     function clearFieldError(field) {
-        field.classList.remove('is-invalid');
-        const errorDiv = field.parentNode.querySelector('.invalid-feedback');
-        if (errorDiv) {
+        field.classList.remove('error');
+        const formGroup = field.closest('.form-group');
+        const errorDiv = formGroup.querySelector('.error-message');
+        if (errorDiv && !errorDiv.dataset.serverError) {
             errorDiv.remove();
         }
     }
 });
+
+// Şifre göster/gizle
+function togglePassword() {
+    const passwordInput = document.querySelector('input[name="password"]');
+    const toggleIcon = document.getElementById('passwordToggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
 </script>
 {% endblock %}

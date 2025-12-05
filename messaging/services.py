@@ -1,12 +1,14 @@
 """
 Mesajlaşma servisleri
+Firebase API → MongoDB entegrasyonu
 """
 import json
 import firebase_admin
-from firebase_admin import credentials, messaging
+from firebase_admin import credentials, messaging, db
 from typing import List, Dict, Optional
 from django.conf import settings
 from django.utils import timezone
+from kayip_esya.mongodb import get_collection, get_db
 from .models import ChatRoom, Message, Notification, UserDevice, ChatInvitation, MessageRead, ChatRoomMembership
 
 
@@ -30,7 +32,10 @@ class FirebaseService:
             
             if settings.FIREBASE_CREDENTIALS_PATH:
                 cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
-                self.app = firebase_admin.initialize_app(cred)
+                options = {}
+                if settings.FIREBASE_DATABASE_URL:
+                    options['databaseURL'] = settings.FIREBASE_DATABASE_URL
+                self.app = firebase_admin.initialize_app(cred, options)
             else:
                 print("Firebase credentials not configured")
         except Exception as e:
@@ -124,7 +129,7 @@ class ChatService:
     
     def create_room(self, name: str, description: str, created_by_id: str, 
                    room_type: str = 'general') -> Optional[ChatRoom]:
-        """Sohbet odası oluştur"""
+        """Sohbet odası oluştur ve MongoDB'ye kaydet"""
         try:
             room = ChatRoom.objects.create(
                 name=name,
@@ -140,15 +145,54 @@ class ChatService:
                 role='admin'
             )
             
+            # MongoDB'ye kaydet
+            self._save_room_to_mongodb(room)
+            
             return room
             
         except Exception as e:
             print(f"Room creation error: {e}")
             return None
     
+    def _save_room_to_mongodb(self, room: ChatRoom):
+        """Sohbet odasını MongoDB'ye kaydet"""
+        try:
+            rooms_collection = get_collection('chat_rooms')
+            
+            room_data = {
+                'room_id': str(room.id),
+                'name': room.name,
+                'description': room.description,
+                'room_type': room.room_type,
+                'created_by_id': str(room.created_by.id),
+                'created_by_username': room.created_by.username,
+                'is_active': room.is_active,
+                'created_at': room.created_at.isoformat(),
+                'updated_at': room.updated_at.isoformat(),
+                'participants': [str(p.id) for p in room.participants.all()]
+            }
+            
+            # MongoDB'ye ekle veya güncelle
+            rooms_collection.update_one(
+                {'room_id': str(room.id)},
+                {'$set': room_data},
+                upsert=True
+            )
+            
+            # Firebase Realtime Database'e de kaydet (opsiyonel)
+            if self.firebase.app and settings.FIREBASE_DATABASE_URL:
+                try:
+                    ref = db.reference(f'rooms/{room.id}')
+                    ref.set(room_data)
+                except Exception as e:
+                    print(f"Firebase Realtime DB save error: {e}")
+            
+        except Exception as e:
+            print(f"MongoDB room save error: {e}")
+    
     def send_message(self, room_id: str, sender_id: str, content: str, 
                     message_type: str = 'text', reply_to_id: str = None) -> Optional[Message]:
-        """Mesaj gönder"""
+        """Mesaj gönder ve MongoDB'ye kaydet"""
         try:
             room = ChatRoom.objects.get(id=room_id)
             
@@ -156,6 +200,7 @@ class ChatService:
             if not room.participants.filter(id=sender_id).exists():
                 return None
             
+            # Django model'de kaydet
             message = Message.objects.create(
                 room=room,
                 sender_id=sender_id,
@@ -163,6 +208,9 @@ class ChatService:
                 message_type=message_type,
                 reply_to_id=reply_to_id
             )
+            
+            # MongoDB'ye kaydet (Firebase API ile entegre)
+            self._save_message_to_mongodb(message)
             
             # Odadaki diğer kullanıcılara bildirim gönder
             self._notify_room_participants(room, message, sender_id)
@@ -172,6 +220,44 @@ class ChatService:
         except Exception as e:
             print(f"Message sending error: {e}")
             return None
+    
+    def _save_message_to_mongodb(self, message: Message):
+        """Mesajı MongoDB'ye kaydet"""
+        try:
+            messages_collection = get_collection('messages')
+            
+            # Mesaj verilerini hazırla
+            message_data = {
+                'message_id': str(message.id),
+                'room_id': str(message.room.id),
+                'sender_id': str(message.sender.id),
+                'sender_username': message.sender.username,
+                'sender_name': f"{message.sender.first_name or ''} {message.sender.last_name or ''}".strip() or message.sender.username,
+                'content': message.content,
+                'message_type': message.message_type,
+                'attachment_url': message.attachment_url or None,
+                'attachment_name': message.attachment_name or None,
+                'is_edited': message.is_edited,
+                'edited_at': message.edited_at.isoformat() if message.edited_at else None,
+                'reply_to_id': str(message.reply_to.id) if message.reply_to else None,
+                'created_at': message.created_at.isoformat(),
+                'room_name': message.room.name,
+                'room_type': message.room.room_type
+            }
+            
+            # MongoDB'ye ekle
+            messages_collection.insert_one(message_data)
+            
+            # Firebase Realtime Database'e de kaydet (opsiyonel)
+            if self.firebase.app and settings.FIREBASE_DATABASE_URL:
+                try:
+                    ref = db.reference(f'messages/{message.room.id}')
+                    ref.push(message_data)
+                except Exception as e:
+                    print(f"Firebase Realtime DB save error: {e}")
+            
+        except Exception as e:
+            print(f"MongoDB message save error: {e}")
     
     def _notify_room_participants(self, room: ChatRoom, message: Message, sender_id: str):
         """Oda katılımcılarına bildirim gönder"""
@@ -323,6 +409,9 @@ class NotificationService:
                 data=data or {}
             )
             
+            # MongoDB'ye kaydet
+            self._save_notification_to_mongodb(notification)
+            
             # FCM bildirimi gönder
             self.firebase.send_notification(
                 user_id=user_id,
@@ -339,6 +428,39 @@ class NotificationService:
         except Exception as e:
             print(f"Create notification error: {e}")
             return None
+    
+    def _save_notification_to_mongodb(self, notification: Notification):
+        """Bildirimi MongoDB'ye kaydet"""
+        try:
+            notifications_collection = get_collection('notifications')
+            
+            notification_data = {
+                'notification_id': str(notification.id),
+                'user_id': str(notification.user.id),
+                'user_username': notification.user.username,
+                'notification_type': notification.notification_type,
+                'title': notification.title,
+                'message': notification.message,
+                'data': notification.data,
+                'is_read': notification.is_read,
+                'is_sent': notification.is_sent,
+                'sent_at': notification.sent_at.isoformat() if notification.sent_at else None,
+                'created_at': notification.created_at.isoformat()
+            }
+            
+            # MongoDB'ye ekle
+            notifications_collection.insert_one(notification_data)
+            
+            # Firebase Realtime Database'e de kaydet (opsiyonel)
+            if self.firebase.app and settings.FIREBASE_DATABASE_URL:
+                try:
+                    ref = db.reference(f'notifications/{notification.user.id}')
+                    ref.push(notification_data)
+                except Exception as e:
+                    print(f"Firebase Realtime DB save error: {e}")
+            
+        except Exception as e:
+            print(f"MongoDB notification save error: {e}")
     
     def send_match_notification(self, user_id: str, match_type: str, 
                                item_title: str, match_details: Dict) -> bool:

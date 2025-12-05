@@ -12,7 +12,7 @@
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     Kayıp Eşya İlanı Oluştur
                 </h4>
-                <p class="text-muted mb-0 mt-2" style="font-size: 0.9rem;">Kayıp eşyanızı bulmak için detaylı bilgi verin</p>
+                <p class="mb-0 mt-2" style="font-size: 0.9rem; color: var(--text-secondary);">Kayıp eşyanızı bulmak için detaylı bilgi verin</p>
             </div>
             <div class="card-body p-4">
                 <form method="post" enctype="multipart/form-data" id="lostItemForm">
@@ -31,7 +31,7 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-muted);">Örn: Kayıp Telefon - İzmir Konak</div>
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Örn: Kayıp Telefon - İzmir Konak</div>
                     </div>
                     
                     <!-- Kategori / Özellikler -->
@@ -57,7 +57,7 @@
                                 {{ form.color }}
                             </div>
                         </div>
-                        <div class="form-text" style="color: var(--text-muted);">Kategori bilgileri kayıtta açıklamaya eklenecektir.</div>
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Kategori bilgileri kayıtta açıklamaya eklenecektir.</div>
                     </div>
 
                     <!-- Açıklama -->
@@ -73,7 +73,7 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-muted);">Eşyanız hakkında detaylı bilgi veriniz (renk, marka, model, özellikler vb.)</div>
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Eşyanız hakkında detaylı bilgi veriniz (renk, marka, model, özellikler vb.)</div>
                     </div>
                     
                     <!-- Şehir ve İlçe -->
@@ -105,6 +105,16 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    <!-- Mahalle -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.neighborhood.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-street-view me-2"></i>Mahalle
+                            </label>
+                            {{ form.neighborhood }}
+                        </div>
+                    </div>
                     
                     <!-- Konum -->
                     <div class="mb-4">
@@ -119,7 +129,7 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-muted);">Örn: Konak Meydanı, Kadıköy Sahil, Taksim Meydanı</div>
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Örn: Konak Meydanı, Kadıköy Sahil, Taksim Meydanı</div>
                     </div>
                     
                     <!-- İletişim Bilgileri -->
@@ -165,7 +175,7 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-muted);">Eşyanızın fotoğrafını yükleyiniz (JPG, PNG - Maksimum 5MB)</div>
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Eşyanızın fotoğrafını yükleyiniz (JPG, PNG - Maksimum 5MB)</div>
                     </div>
                     
                     <!-- Acil İlan -->
@@ -183,7 +193,7 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-muted);">Önemli eşyalar için acil ilan olarak işaretleyebilirsiniz</div>
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Önemli eşyalar için acil ilan olarak işaretleyebilirsiniz</div>
                     </div>
                     
                     <!-- Form Hataları -->
@@ -222,6 +232,13 @@
     color: var(--text-primary) !important;
 }
 
+.form-text {
+    color: var(--text-secondary) !important;
+    opacity: 0.9 !important;
+    font-size: 0.875rem !important;
+    margin-top: 0.5rem !important;
+}
+
 .form-control:focus, .form-select:focus {
     background: var(--dark-surface-light) !important;
     border-color: var(--primary-green) !important;
@@ -230,7 +247,8 @@
 }
 
 .form-control::placeholder {
-    color: var(--text-muted) !important;
+    color: var(--text-secondary) !important;
+    opacity: 0.7 !important;
 }
 
 .form-check-input {
@@ -253,7 +271,14 @@
     border-color: var(--border-color);
     color: var(--text-primary);
 }
+
+/* Select içindeki açılır liste okunaklı olsun (sistem beyaz zeminde açtığı için) */
+.form-select option {
+    background: #ffffff !important;
+    color: #111111 !important;
+}
 </style>
+<script src="{% static 'js/city_districts.js' %}"></script>
 <script>
 // Ana kategoriye göre alt kategori öneri placeholder'ını değiştir
 document.addEventListener('DOMContentLoaded', function() {
@@ -271,6 +296,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const ph = placeholders[this.value] || 'Örn: Telefon, Cüzdan, Gözlük';
     if (subInput) subInput.setAttribute('placeholder', ph);
   });
+});
+
+// Şehre göre ilçe seçimi (şehir dropdownu gibi)
+document.addEventListener('DOMContentLoaded', function() {
+  const citySelect = document.getElementById('citySelect');
+  const districtSelect = document.getElementById('districtSelect');
+  function updateDistricts() {
+    if (!citySelect || !districtSelect) return;
+    const city = citySelect.value;
+    const districts = CITY_DISTRICTS[city] || [];
+    districtSelect.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'İlçe (opsiyonel)';
+    districtSelect.appendChild(placeholder);
+
+    districts.forEach(function (d) {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      districtSelect.appendChild(opt);
+    });
+  }
+
+  if (citySelect) {
+    citySelect.addEventListener('change', updateDistricts);
+    updateDistricts();
+  }
 });
 </script>
 {% endblock %}

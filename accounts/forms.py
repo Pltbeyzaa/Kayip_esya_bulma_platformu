@@ -8,32 +8,36 @@ class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'E-posta adresinizi girin'
+            'class': 'form-control register-input',
+            'placeholder': 'E-posta adresinizi girin',
+            'autocomplete': 'email'
         })
     )
     first_name = forms.CharField(
         max_length=30,
         required=True,
         widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Adınız'
+            'class': 'form-control register-input',
+            'placeholder': 'Adınız',
+            'autocomplete': 'given-name'
         })
     )
     last_name = forms.CharField(
         max_length=30,
         required=True,
         widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Soyadınız'
+            'class': 'form-control register-input',
+            'placeholder': 'Soyadınız',
+            'autocomplete': 'family-name'
         })
     )
     phone_number = forms.CharField(
         max_length=15,
         required=False,
         widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Telefon numaranız (opsiyonel)'
+            'class': 'form-control register-input',
+            'placeholder': 'Telefon numaranız (opsiyonel)',
+            'autocomplete': 'tel'
         })
     )
 
@@ -44,16 +48,19 @@ class UserRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Kullanıcı adınız'
+            'class': 'form-control register-input',
+            'placeholder': 'Kullanıcı adınız',
+            'autocomplete': 'username'
         })
         self.fields['password1'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Şifreniz'
+            'class': 'form-control register-input',
+            'placeholder': 'Şifreniz',
+            'autocomplete': 'new-password'
         })
         self.fields['password2'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Şifrenizi tekrar girin'
+            'class': 'form-control register-input',
+            'placeholder': 'Şifrenizi tekrar girin',
+            'autocomplete': 'new-password'
         })
 
     def clean_email(self):
@@ -66,14 +73,16 @@ class UserRegistrationForm(UserCreationForm):
 class UserLoginForm(forms.Form):
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'E-posta adresinizi girin'
+            'class': 'form-control login-input',
+            'placeholder': 'E-posta adresinizi girin',
+            'autocomplete': 'email'
         })
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Şifrenizi girin'
+            'class': 'form-control login-input',
+            'placeholder': 'Şifrenizi girin',
+            'autocomplete': 'current-password'
         })
     )
 
@@ -93,33 +102,90 @@ class UserLoginForm(forms.Form):
 class LostItemPostForm(forms.ModelForm):
     """Kayıp eşya ilanı formu"""
     
-    # Türk şehirleri
+    # Türk şehirleri - 81 il
     TURKISH_CITIES = [
         ('', 'Şehir Seçiniz'),
-        ('İstanbul', 'İstanbul'),
-        ('Ankara', 'Ankara'),
-        ('İzmir', 'İzmir'),
-        ('Bursa', 'Bursa'),
-        ('Antalya', 'Antalya'),
         ('Adana', 'Adana'),
-        ('Konya', 'Konya'),
-        ('Gaziantep', 'Gaziantep'),
-        ('Şanlıurfa', 'Şanlıurfa'),
-        ('Kocaeli', 'Kocaeli'),
-        ('Mersin', 'Mersin'),
-        ('Diyarbakır', 'Diyarbakır'),
-        ('Hatay', 'Hatay'),
-        ('Manisa', 'Manisa'),
-        ('Kayseri', 'Kayseri'),
-        ('Samsun', 'Samsun'),
-        ('Balıkesir', 'Balıkesir'),
-        ('Kahramanmaraş', 'Kahramanmaraş'),
-        ('Van', 'Van'),
+        ('Adıyaman', 'Adıyaman'),
+        ('Afyonkarahisar', 'Afyonkarahisar'),
+        ('Ağrı', 'Ağrı'),
+        ('Amasya', 'Amasya'),
+        ('Ankara', 'Ankara'),
+        ('Antalya', 'Antalya'),
+        ('Artvin', 'Artvin'),
         ('Aydın', 'Aydın'),
-        ('Tekirdağ', 'Tekirdağ'),
+        ('Balıkesir', 'Balıkesir'),
+        ('Bilecik', 'Bilecik'),
+        ('Bingöl', 'Bingöl'),
+        ('Bitlis', 'Bitlis'),
+        ('Bolu', 'Bolu'),
+        ('Burdur', 'Burdur'),
+        ('Bursa', 'Bursa'),
+        ('Çanakkale', 'Çanakkale'),
+        ('Çankırı', 'Çankırı'),
+        ('Çorum', 'Çorum'),
         ('Denizli', 'Denizli'),
-        ('Malatya', 'Malatya'),
+        ('Diyarbakır', 'Diyarbakır'),
+        ('Edirne', 'Edirne'),
+        ('Elazığ', 'Elazığ'),
+        ('Erzincan', 'Erzincan'),
         ('Erzurum', 'Erzurum'),
+        ('Eskişehir', 'Eskişehir'),
+        ('Gaziantep', 'Gaziantep'),
+        ('Giresun', 'Giresun'),
+        ('Gümüşhane', 'Gümüşhane'),
+        ('Hakkari', 'Hakkari'),
+        ('Hatay', 'Hatay'),
+        ('Isparta', 'Isparta'),
+        ('Mersin', 'Mersin'),
+        ('İstanbul', 'İstanbul'),
+        ('İzmir', 'İzmir'),
+        ('Kars', 'Kars'),
+        ('Kastamonu', 'Kastamonu'),
+        ('Kayseri', 'Kayseri'),
+        ('Kırklareli', 'Kırklareli'),
+        ('Kırşehir', 'Kırşehir'),
+        ('Kocaeli', 'Kocaeli'),
+        ('Konya', 'Konya'),
+        ('Kütahya', 'Kütahya'),
+        ('Malatya', 'Malatya'),
+        ('Manisa', 'Manisa'),
+        ('Kahramanmaraş', 'Kahramanmaraş'),
+        ('Mardin', 'Mardin'),
+        ('Muğla', 'Muğla'),
+        ('Muş', 'Muş'),
+        ('Nevşehir', 'Nevşehir'),
+        ('Niğde', 'Niğde'),
+        ('Ordu', 'Ordu'),
+        ('Rize', 'Rize'),
+        ('Sakarya', 'Sakarya'),
+        ('Samsun', 'Samsun'),
+        ('Siirt', 'Siirt'),
+        ('Sinop', 'Sinop'),
+        ('Sivas', 'Sivas'),
+        ('Tekirdağ', 'Tekirdağ'),
+        ('Tokat', 'Tokat'),
+        ('Trabzon', 'Trabzon'),
+        ('Tunceli', 'Tunceli'),
+        ('Şanlıurfa', 'Şanlıurfa'),
+        ('Uşak', 'Uşak'),
+        ('Van', 'Van'),
+        ('Yozgat', 'Yozgat'),
+        ('Zonguldak', 'Zonguldak'),
+        ('Aksaray', 'Aksaray'),
+        ('Bayburt', 'Bayburt'),
+        ('Karaman', 'Karaman'),
+        ('Kırıkkale', 'Kırıkkale'),
+        ('Batman', 'Batman'),
+        ('Şırnak', 'Şırnak'),
+        ('Bartın', 'Bartın'),
+        ('Ardahan', 'Ardahan'),
+        ('Iğdır', 'Iğdır'),
+        ('Yalova', 'Yalova'),
+        ('Karabük', 'Karabük'),
+        ('Kilis', 'Kilis'),
+        ('Osmaniye', 'Osmaniye'),
+        ('Düzce', 'Düzce'),
     ]
     
     city = forms.ChoiceField(
@@ -130,6 +196,15 @@ class LostItemPostForm(forms.ModelForm):
             'id': 'citySelect'
         }),
         label='Şehir'
+    )
+
+    neighborhood = forms.CharField(
+        required=False,
+        label='Mahalle',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Mahalle adı (örn: Barbaros Mahallesi)'
+        })
     )
     
     # İlan kategorileri (DB yerine açıklamaya işlenecek)
@@ -181,9 +256,9 @@ class LostItemPostForm(forms.ModelForm):
                 'rows': 5,
                 'placeholder': 'Eşyanız hakkında detaylı bilgi veriniz...'
             }),
-            'district': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'İlçe (opsiyonel)'
+            'district': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'districtSelect',
             }),
             'location': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -234,6 +309,8 @@ class LostItemPostForm(forms.ModelForm):
             parts.append(f"Marka: {cleaned['brand']}")
         if cleaned.get('color'):
             parts.append(f"Renk: {cleaned['color']}")
+        if cleaned.get('neighborhood'):
+            parts.append(f"Mahalle: {cleaned['neighborhood']}")
 
         if parts:
             desc = cleaned.get('description') or ''

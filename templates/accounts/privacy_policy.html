@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}KVKK Gizlilik Politikası - FindUs{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="legal-container">
+        <div class="legal-header">
+            <h1>GİZLİLİK POLİTİKASI VE KİŞİSEL VERİLERİN KORUNMASI AYDINLATMA METNİ</h1>
+            <p class="legal-update-date">Son Güncelleme Tarihi: {{ "now"|date:"d F Y" }}</p>
+        </div>
+
+        <div class="legal-content">
+            <p class="legal-intro">
+                Bu metin, Findus platformu ("Findus" veya "Platform") olarak, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, veri sorumlusu sıfatıyla, platformumuzu kullanan ziyaretçi ve kullanıcılarımızın ("Kullanıcı") kişisel verilerinin işlenmesine ilişkin aydınlatma yükümlülüğümüzü yerine getirmek amacıyla hazırlanmıştır.
+            </p>
+
+            <section class="legal-section">
+                <h2>1. Veri Sorumlusu</h2>
+                <p>Findus Platformu Yöneticileri ("Biz"), platforma sağladığınız kişisel verilerin işlenmesinden KVKK kapsamında veri sorumlusu olarak sorumludur.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>2. İşlenen Kişisel Veriler ve İşleme Amaçları</h2>
+                <p>Platformumuz, kayıp çocuk ilanlarının oluşturulması ve kamuoyu ile paylaşılarak bulunmalarına yardımcı olunması amacıyla faaliyet göstermektedir. Bu kapsamda işlenen veriler şunlardır:</p>
+                
+                <h3>a) İlan Veren Kullanıcı (İhbarcı) Verileri:</h3>
+                <ul>
+                    <li><strong>Kimlik Verileri:</strong> Ad, soyadı.</li>
+                    <li><strong>İletişim Verileri:</strong> E-posta adresi, telefon numarası.</li>
+                    <li><strong>İşlem Güvenliği:</strong> IP adresi, siteye giriş-çıkış (log) kayıtları.</li>
+                </ul>
+                <p><strong>İşleme Amaçları:</strong> Kullanıcının kimliğini teyit etmek, ilanın doğruluğunu (kötüye kullanımı önlemek amacıyla) teyit edebilmek, ilanla ilgili önemli durumlarda (çocuğun bulunması vb.) kullanıcıyla iletişime geçmek, yasal taleplere yanıt vermek.</p>
+
+                <h3>b) İlana Konu Olan Kayıp Çocuk Verileri (Hassas Nitelikli Kişisel Veri):</h3>
+                <ul>
+                    <li><strong>Kimlik Verileri:</strong> Ad, soyadı, yaş, cinsiyet.</li>
+                    <li><strong>Görsel Veriler:</strong> Fotoğraf.</li>
+                    <li><strong>Konum Verileri:</strong> Son görüldüğü yer.</li>
+                    <li><strong>Diğer Bilgiler:</strong> Fiziksel tanımlamalar (kıyafet, boy, kilo vb.).</li>
+                </ul>
+                <p><strong>İşleme Amaçları:</strong> Kayıp çocuğun bulunabilmesi amacıyla kamuoyunu bilgilendirecek ilanı oluşturmak, bu ilanı platform üzerinden yayınlamak ve yalnızca bu amaçla ilgili olabilecek yetkili kolluk kuvvetleri (Polis, Jandarma) ile yasal bir talep olması halinde paylaşmak.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>3. Veri İşlemenin Hukuki Sebebi</h2>
+                <p>Platforma bir ilan göndererek, kayıp çocuğun velisi, vasisi veya yasal temsilcisi olduğunuzu ve bu verilerin (çocuğun fotoğrafı, adı vb.) kamuya açık bir platformda yayınlanması için KVKK uyarınca "açık rıza" verdiğinizi beyan ve kabul edersiniz.</p>
+                <p>Verilerinizi, çocuğun bulunmasına yönelik "meşru menfaat" ve bir "hakkın tesisi, kullanılması veya korunması" hukuki sebeplerine dayanarak işlemekteyiz.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>4. Kişisel Verilerin Aktarılması</h2>
+                <p>Kayıp çocuk ilanına konu olan veriler (çocuğun adı, fotoğrafı, son görüldüğü yer), ilanın temel amacı gereği platformu ziyaret eden tüm internet kullanıcılarına (kamuya) açık olacaktır.</p>
+                <p>İlan veren kullanıcının iletişim bilgileri (telefon, e-posta) kamuya açık olarak paylaşılmayacaktır (Kullanıcı bilinçli olarak ilan metnine eklemediği sürece).</p>
+                <p>Bu veriler, yasal bir zorunluluk veya resmi bir soruşturma (savcılık, emniyet talebi) olması durumunda yetkili mercilerle paylaşılabilir.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>5. Veri Saklama Süresi</h2>
+                <p>Bir kayıp ilanı, çocuk bulunduğunda ilan verenin talebi üzerine veya platform yöneticilerinin tespiti halinde derhal yayından kaldırılır ve ilgili veriler (ilan verenin rızasıyla) sistemden anonimleştirilir veya silinir. Yayından kaldırılan ilanlar, yasal yükümlülükler süresince (olası bir soruşturma için) sistemimizde saklanabilir.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>6. İlgili Kişinin (Kullanıcının) Hakları</h2>
+                <p>KVKK'nın 11. maddesi uyarınca, veri sahibi olarak aşağıdaki haklara sahipsiniz:</p>
+                <ul>
+                    <li>Verilerinizin işlenip işlenmediğini öğrenme,</li>
+                    <li>İşlendiyse bilgi talep etme,</li>
+                    <li>İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme,</li>
+                    <li>Verilerinizin düzeltilmesini, silinmesini veya yok edilmesini isteme,</li>
+                    <li>Ve diğer yasal haklarınız.</li>
+                </ul>
+                <p>Bu haklarınızı kullanmak için <a href="mailto:destek@findus.com">destek@findus.com</a> üzerinden bizimle iletişime geçebilirsiniz.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>7. Veri Güvenliği</h2>
+                <p>Findus, topladığı verilerin güvenliğini sağlamak için gerekli teknik ve idari tedbirleri almayı taahhüt eder.</p>
+            </section>
+
+            <div class="legal-footer">
+                <a href="{% url 'register' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Kayıt Sayfasına Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

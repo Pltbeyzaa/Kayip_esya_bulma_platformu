@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kullanım Şartları - FindUs{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="legal-container">
+        <div class="legal-header">
+            <h1>KULLANIM ŞARTLARI VE KOŞULLARI</h1>
+            <p class="legal-update-date">Lütfen Findus ("Site" veya "Platform") web sitesini kullanmadan önce bu şartları dikkatlice okuyunuz. Bu platformu kullanarak, aşağıda belirtilen şartları kabul etmiş sayılırsınız.</p>
+        </div>
+
+        <div class="legal-content">
+            <section class="legal-section">
+                <h2>1. Taraflar ve Kabul</h2>
+                <p>Bu Kullanım Şartları, Findus Platformu Yöneticileri ("Findus") ile platformu kullanan ("Kullanıcı") arasında yasal bir sözleşmedir. Siteye erişim sağlamakla bu şartları kabul etmiş olursunuz.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>2. Platformun Amacı ve Sorumluluk Reddi</h2>
+                <h3>a) Findus, bir kamuoyu bilgilendirme platformudur.</h3>
+                <p>Amacı, kayıp çocuk vakalarında ailelere ve kolluk kuvvetlerine yardımcı olmak için gönüllülük esasına dayalı bir duyuru ağı sağlamaktır.</p>
+
+                <h3>b) Findus, RESMİ BİR KOLLUK KUVVETİ VEYA ACİL YARDIM KURULUŞU DEĞİLDİR.</h3>
+
+                <h3>c) ACİL DURUMLARDA:</h3>
+                <p>Bir çocuğun kaybolması durumunda, bu platformu kullanmadan önce <strong>DERHAL 112 Acil Çağrı Merkezi'ni, 155 Polis İmdat'ı veya 156 Jandarma'yı</strong> arayarak resmi kayıp başvurusunda bulunmanız zorunludur. Bu platform, resmi başvurunun yerine geçmez.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>3. Kullanıcı Yükümlülükleri ve Garantileri</h2>
+                <p>Kullanıcı, platforma ilan eklerken aşağıdaki şartları kabul ve beyan eder:</p>
+
+                <h3>a) Doğru Bilgi:</h3>
+                <p>İlan verilirken sağlanan tüm bilgilerin (çocuğun kimliği, son görüldüğü yer, iletişim bilgileri) doğru, eksiksiz ve güncel olduğunu garanti eder.</p>
+
+                <h3>b) Yasal Yetki (En Önemli Madde):</h3>
+                <p>Kullanıcı, ilanda bilgilerini (fotoğraf, isim vb.) paylaştığı kayıp çocuğun yasal velisi, vasisi (anne/babası) olduğunu VEYA bu ilanı girmek için yasal veliden/vasiden açık ve yazılı izin aldığını VEYA yetkili bir kolluk kuvveti mensubu olduğunu beyan ve taahhüt eder.</p>
+
+                <h3>c) Kötüye Kullanım Yasağı:</h3>
+                <p>Platform, sahte, yanıltıcı, taciz edici veya kötü niyetli ilanlar yayınlamak amacıyla kullanılamaz. Başkalarına ait kişisel veriler, izinsiz olarak bu platformda paylaşılamaz.</p>
+
+                <h3>d) Güncelleme Sorumluluğu:</h3>
+                <p>Kullanıcı, ilanı verilen çocuk bulunduğunda veya ilanın yayından kaldırılmasını gerektiren herhangi bir gelişme olduğunda, derhal Findus platform yöneticilerine bildirimde bulunmakla yükümlüdür.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>4. Findus'un Hakları ve Sorumluluğun Sınırlandırılması</h2>
+                <h3>a)</h3>
+                <p>Findus, Kullanıcı tarafından sağlanan içeriğin doğruluğunu araştırmakla yükümlü değildir. İlanların içeriğinden doğacak her türlü yasal sorumluluk, ilanı giren Kullanıcı'ya aittir.</p>
+
+                <h3>b)</h3>
+                <p>Findus, bu Kullanım Şartları'na aykırı olduğu veya kötü niyetli olduğu tespit edilen ilanları, Kullanıcı'ya haber vermeksizin derhal yayından kaldırma, düzeltme veya reddetme hakkını saklı tutar.</p>
+
+                <h3>c)</h3>
+                <p>Findus, sahte veya kötü niyetli ilan tespiti halinde, ilgili Kullanıcı'nın erişimini engelleme ve bu bilgileri (IP adresi, iletişim bilgileri) yasal bir soruşturma kapsamında resmi makamlarla paylaşma hakkını saklı tutar.</p>
+
+                <h3>d)</h3>
+                <p>Findus, platformun kesintisiz çalışacağını garanti etmez ve platformdaki bilgilerin üçüncü kişilerce (ziyaretçiler) nasıl kullanılacağından sorumlu tutulamaz.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>5. Değişiklikler ve Uygulanacak Hukuk</h2>
+                <p>Findus, bu Kullanım Şartları'nı dilediği zaman değiştirme hakkını saklı tutar. Değişiklikler sitede yayınlandığı anda yürürlüğe girer. Bu sözleşmeden doğacak tüm ihtilaflarda Türk Hukuku uygulanacak ve İstanbul Mahkemeleri yetkili olacaktır.</p>
+            </section>
+
+            <div class="legal-footer">
+                <a href="{% url 'register' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Kayıt Sayfasına Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

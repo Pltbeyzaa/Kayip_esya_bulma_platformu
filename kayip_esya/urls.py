@@ -11,7 +11,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     # Görüntü eşleştirme API'leri
     path('image-matching/', include('image_matching.urls')),
-    # path('location/', include('location_services.urls')),
+    path('location/', include('location_services.urls')),
     # path('messaging/', include('messaging.urls')),
     path('', include('accounts.urls')),
 ]

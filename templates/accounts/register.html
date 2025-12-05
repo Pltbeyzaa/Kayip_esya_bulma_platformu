@@ -1,128 +1,228 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Kayıt Ol - Kayıp Eşya Platformu{% endblock %}
+{% block title %}Kayıt Ol - FindUs{% endblock %}
+
+{% block body_class %}register-page{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow fade-in">
-            <div class="card-header text-center">
-                <h4 class="mb-0 text-primary-green">
-                    <i class="fas fa-user-plus me-2"></i>
-                    Kayıt Ol
-                </h4>
+<div class="register-container">
+    <div class="register-wrapper">
+        <div class="register-card">
+            <!-- Logo ve Başlık -->
+            <div class="register-header">
+                <div class="register-logo">
+                    <span class="register-question-mark">?</span>
+                    <span class="register-brand">FINDUS</span>
+                </div>
+                <h2 class="register-title">Hesap Oluştur</h2>
+                <p class="register-subtitle">Kayıp eşyaları bulmaya başlayın</p>
             </div>
-            <div class="card-body p-4">
-                <form method="post" id="registerForm">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.first_name.id_for_label }}" class="form-label">Ad</label>
-                            {{ form.first_name }}
+
+            <!-- Form -->
+            <form method="post" id="registerForm" class="register-form">
+                {% csrf_token %}
+                
+                <!-- Ad ve Soyad -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Ad
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                {{ form.first_name }}
+                            </div>
                             {% if form.first_name.errors %}
-                                <div class="text-danger small mt-1">
+                                <div class="error-message">
                                     {% for error in form.first_name.errors %}
-                                        {{ error }}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Soyad</label>
-                            {{ form.last_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Soyad
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                {{ form.last_name }}
+                            </div>
                             {% if form.last_name.errors %}
-                                <div class="text-danger small mt-1">
+                                <div class="error-message">
                                     {% for error in form.last_name.errors %}
-                                        {{ error }}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Kullanıcı Adı</label>
+                </div>
+                
+                <!-- Kullanıcı Adı -->
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">
+                        <i class="fas fa-at me-2"></i>Kullanıcı Adı
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <i class="fas fa-at"></i>
+                        </span>
                         {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.username.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">E-posta</label>
+                    {% if form.username.errors %}
+                        <div class="error-message">
+                            {% for error in form.username.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- E-posta -->
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>E-posta
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
                         {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.email.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">Telefon Numarası (Opsiyonel)</label>
+                    {% if form.email.errors %}
+                        <div class="error-message">
+                            {% for error in form.email.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Telefon -->
+                <div class="form-group">
+                    <label for="{{ form.phone_number.id_for_label }}" class="form-label">
+                        <i class="fas fa-phone me-2"></i>Telefon Numarası <span class="text-muted">(Opsiyonel)</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <i class="fas fa-phone"></i>
+                        </span>
                         {{ form.phone_number }}
-                        {% if form.phone_number.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.phone_number.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password1.id_for_label }}" class="form-label">Şifre</label>
+                    {% if form.phone_number.errors %}
+                        <div class="error-message">
+                            {% for error in form.phone_number.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Şifre -->
+                <div class="form-group">
+                    <label for="{{ form.password1.id_for_label }}" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Şifre
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <i class="fas fa-lock"></i>
+                        </span>
                         {{ form.password1 }}
-                        <div class="form-text">Şifreniz en az 8 karakter olmalıdır.</div>
-                        {% if form.password1.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.password1.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password2.id_for_label }}" class="form-label">Şifre Tekrar</label>
-                        {{ form.password2 }}
-                        {% if form.password2.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.password2.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="agreeTerms" required>
-                        <label class="form-check-label" for="agreeTerms">
-                            <a href="#" class="text-primary-green">Kullanım şartlarını</a> kabul ediyorum.
-                        </label>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-user-plus me-2"></i>
-                            Kayıt Ol
+                        <button type="button" class="password-toggle" onclick="togglePassword('password1')">
+                            <i class="fas fa-eye" id="password1ToggleIcon"></i>
                         </button>
                     </div>
-                </form>
-                
-                <div class="text-center mt-3">
-                    <p class="mb-0">Zaten hesabınız var mı? 
-                        <a href="{% url 'login' %}" class="text-primary-green">Giriş yapın</a>
-                    </p>
+                    <div class="password-help-text">
+                        <i class="fas fa-info-circle me-1"></i>Şifreniz en az 8 karakter olmalıdır.
+                    </div>
+                    <div id="passwordStrength" class="password-strength"></div>
+                    {% if form.password1.errors %}
+                        <div class="error-message">
+                            {% for error in form.password1.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
+                
+                <!-- Şifre Tekrar -->
+                <div class="form-group">
+                    <label for="{{ form.password2.id_for_label }}" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Şifre Tekrar
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        {{ form.password2 }}
+                        <button type="button" class="password-toggle" onclick="togglePassword('password2')">
+                            <i class="fas fa-eye" id="password2ToggleIcon"></i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}
+                        <div class="error-message">
+                            {% for error in form.password2.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Kullanım Şartları ve KVKK -->
+                <div class="form-options">
+                    <div class="remember-me">
+                        <input type="checkbox" class="custom-checkbox" id="agreeTerms" name="agree_terms" required>
+                        <label for="agreeTerms" class="checkbox-label">
+                            <span class="checkbox-custom"></span>
+                            <a href="{% url 'terms_of_service' %}" target="_blank" class="terms-link">Kullanım şartlarını</a> kabul ediyorum.
+                        </label>
+                    </div>
+                    <div class="remember-me">
+                        <input type="checkbox" class="custom-checkbox" id="agreePrivacy" name="agree_privacy" required>
+                        <label for="agreePrivacy" class="checkbox-label">
+                            <span class="checkbox-custom"></span>
+                            <a href="{% url 'privacy_policy' %}" target="_blank" class="terms-link">KVKK Gizlilik Politikasını</a> kabul ediyorum.
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="register-button">
+                    <span>Hesap Oluştur</span>
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </form>
+            
+            <!-- Giriş Yap Linki -->
+            <div class="register-footer">
+                <p class="login-text">
+                    Zaten hesabınız var mı?
+                    <a href="{% url 'login' %}" class="login-link">
+                        <span>Giriş yapın</span>
+                        <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </p>
             </div>
+
+            <!-- Form Hataları -->
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                    <div class="error-alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -137,11 +237,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.querySelector('input[name="email"]');
     const phoneInput = document.querySelector('input[name="phone_number"]');
     
+    // Input focus efektleri
+    const inputs = document.querySelectorAll('.register-form input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.closest('.input-wrapper').classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.closest('.input-wrapper').classList.remove('focused');
+            }
+        });
+        
+        // Başlangıçta değer varsa focused ekle
+        if (input.value) {
+            input.closest('.input-wrapper').classList.add('focused');
+        }
+    });
+    
     // Password strength indicator
     password1.addEventListener('input', function() {
         const password = this.value;
         const strength = getPasswordStrength(password);
         updatePasswordStrength(strength);
+        
+        // Şifre eşleşme kontrolü
+        if (password2.value) {
+            if (password2.value !== password) {
+                showFieldError(password2, 'Şifreler eşleşmiyor.');
+            } else {
+                clearFieldError(password2);
+            }
+        }
     });
     
     // Password confirmation
@@ -154,18 +282,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Phone number formatting
-    phoneInput.addEventListener('input', function() {
-        let value = this.value.replace(/\D/g, '');
-        if (value.length > 0) {
-            if (value.startsWith('0')) {
-                value = value.substring(1);
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.startsWith('0')) {
+                    value = value.substring(1);
+                }
+                if (value.length >= 10) {
+                    value = value.substring(0, 10);
+                }
             }
-            if (value.length >= 10) {
-                value = value.substring(0, 10);
-            }
-        }
-        this.value = value;
-    });
+            this.value = value;
+        });
+    }
     
     // Form validation
     form.addEventListener('submit', function(e) {
@@ -201,12 +331,27 @@ document.addEventListener('DOMContentLoaded', function() {
             clearFieldError(password2);
         }
         
+        // KVKK ve Kullanım Şartları kontrolü
+        const agreeTerms = document.getElementById('agreeTerms');
+        const agreePrivacy = document.getElementById('agreePrivacy');
+        
+        if (!agreeTerms.checked) {
+            alert('Kayıt olmak için kullanım şartlarını kabul etmelisiniz.');
+            isValid = false;
+        }
+        
+        if (!agreePrivacy.checked) {
+            alert('Kayıt olmak için gizlilik politikasını kabul etmelisiniz.');
+            isValid = false;
+        }
+        
         if (!isValid) {
             e.preventDefault();
         }
     });
     
     function getPasswordStrength(password) {
+        if (!password) return 0;
         let strength = 0;
         if (password.length >= 8) strength++;
         if (/[a-z]/.test(password)) strength++;
@@ -218,22 +363,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updatePasswordStrength(strength) {
         const strengthDiv = document.getElementById('passwordStrength');
-        if (!strengthDiv) {
-            const strengthDiv = document.createElement('div');
-            strengthDiv.id = 'passwordStrength';
-            strengthDiv.className = 'mt-2';
-            password1.parentNode.appendChild(strengthDiv);
+        if (!strengthDiv) return;
+        
+        if (strength === 0) {
+            strengthDiv.innerHTML = '';
+            return;
         }
         
         const strengthText = ['Çok zayıf', 'Zayıf', 'Orta', 'Güçlü', 'Çok güçlü'];
-        const strengthColors = ['danger', 'warning', 'info', 'success', 'success'];
+        const strengthColors = ['#EF4444', '#F59E0B', '#3B82F6', '#10B981', '#10B981'];
+        const strengthLabels = ['Çok zayıf', 'Zayıf', 'Orta', 'Güçlü', 'Çok güçlü'];
         
-        document.getElementById('passwordStrength').innerHTML = `
-            <div class="progress" style="height: 5px;">
-                <div class="progress-bar bg-${strengthColors[strength-1] || 'secondary'}" 
-                     style="width: ${(strength/5)*100}%"></div>
+        strengthDiv.innerHTML = `
+            <div class="strength-bar">
+                <div class="strength-fill" style="width: ${(strength/5)*100}%; background-color: ${strengthColors[strength-1]}"></div>
             </div>
-            <small class="text-${strengthColors[strength-1] || 'secondary'}">${strengthText[strength-1] || 'Şifre girin'}</small>
+            <div class="strength-text" style="color: ${strengthColors[strength-1]}">
+                <i class="fas fa-shield-alt me-1"></i>${strengthLabels[strength-1]}
+            </div>
         `;
     }
     
@@ -244,20 +391,41 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function showFieldError(field, message) {
         clearFieldError(field);
-        field.classList.add('is-invalid');
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'invalid-feedback';
-        errorDiv.textContent = message;
-        field.parentNode.appendChild(errorDiv);
+        field.classList.add('error');
+        const formGroup = field.closest('.form-group');
+        let errorDiv = formGroup.querySelector('.error-message');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            formGroup.appendChild(errorDiv);
+        }
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>' + message;
     }
     
     function clearFieldError(field) {
-        field.classList.remove('is-invalid');
-        const errorDiv = field.parentNode.querySelector('.invalid-feedback');
-        if (errorDiv) {
+        field.classList.remove('error');
+        const formGroup = field.closest('.form-group');
+        const errorDiv = formGroup.querySelector('.error-message');
+        if (errorDiv && !errorDiv.dataset.serverError) {
             errorDiv.remove();
         }
     }
 });
+
+// Şifre göster/gizle
+function togglePassword(fieldName) {
+    const passwordInput = document.querySelector(`input[name="${fieldName}"]`);
+    const toggleIcon = document.getElementById(`${fieldName}ToggleIcon`);
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
 </script>
 {% endblock %}

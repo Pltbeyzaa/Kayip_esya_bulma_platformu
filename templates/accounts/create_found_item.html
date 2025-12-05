@@ -12,7 +12,7 @@
                     <i class="fas fa-hand-holding me-2"></i>
                     Bulunan Eşya İlanı Oluştur
                 </h4>
-                <p class="text-muted mb-0 mt-2" style="font-size: 0.9rem;">Bulduğunuz eşyanın sahibine ulaşması için bilgi verin</p>
+                <p class="mb-0 mt-2" style="font-size: 0.9rem; color: var(--text-secondary);">Bulduğunuz eşyanın sahibine ulaşması için bilgi verin</p>
             </div>
             <div class="card-body p-4">
                 <form method="post" enctype="multipart/form-data" id="foundItemForm">
@@ -41,7 +41,7 @@
                                 {{ form.color }}
                             </div>
                         </div>
-                        <div class="form-text" style="color: var(--text-muted);">Kategori bilgileri kayıtta açıklamaya eklenecektir.</div>
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Kategori bilgileri kayıtta açıklamaya eklenecektir.</div>
                     </div>
 
                     <!-- Başlık -->
@@ -73,6 +73,16 @@
                                 <i class="fas fa-map-marker-alt me-2"></i>İlçe
                             </label>
                             {{ form.district }}
+                        </div>
+                    </div>
+
+                    <!-- Mahalle -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.neighborhood.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-street-view me-2"></i>Mahalle
+                            </label>
+                            {{ form.neighborhood }}
                         </div>
                     </div>
 
@@ -125,12 +135,40 @@
 
 <style>
 .card { background: var(--dark-surface) !important; border: 1px solid var(--border-color) !important; }
-.form-control, .form-select { background: var(--dark-surface-light) !important; border: 1px solid var(--border-color) !important; color: var(--text-primary) !important; }
-.form-control:focus, .form-select:focus { background: var(--dark-surface-light) !important; border-color: var(--primary-green) !important; color: var(--text-primary) !important; box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25) !important; }
+.form-control, .form-select { 
+    background: var(--dark-surface-light) !important; 
+    border: 1px solid var(--border-color) !important; 
+    color: var(--text-primary) !important; 
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary) !important;
+    opacity: 0.7 !important;
+}
+
+.form-control:focus, .form-select:focus { 
+    background: var(--dark-surface-light) !important; 
+    border-color: var(--primary-green) !important; 
+    color: var(--text-primary) !important; 
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25) !important; 
+}
+
+.form-text {
+    color: var(--text-secondary) !important;
+    opacity: 0.9 !important;
+    font-size: 0.875rem !important;
+    margin-top: 0.5rem !important;
+}
 .btn-outline-secondary { border-color: var(--border-color); color: var(--text-secondary); }
 .btn-outline-secondary:hover { background: var(--dark-surface-light); border-color: var(--border-color); color: var(--text-primary); }
+/* Select içindeki açılır liste okunaklı olsun (sistem beyaz zeminde açtığı için) */
+.form-select option {
+    background: #ffffff !important;
+    color: #111111 !important;
+}
 </style>
 
+<script src="{% static 'js/city_districts.js' %}"></script>
 <script>
 // Aynı dinamik placeholder mantığını burada da kullan
 document.addEventListener('DOMContentLoaded', function() {
@@ -148,6 +186,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const ph = placeholders[this.value] || 'Örn: Anahtar, Cüzdan, Saat';
     if (subInput) subInput.setAttribute('placeholder', ph);
   });
+});
+
+// Şehre göre ilçe seçimi (şehir dropdownu gibi)
+document.addEventListener('DOMContentLoaded', function() {
+  const citySelect = document.getElementById('citySelect');
+  const districtSelect = document.getElementById('districtSelect');
+  function updateDistricts() {
+    if (!citySelect || !districtSelect) return;
+    const city = citySelect.value;
+    const districts = CITY_DISTRICTS[city] || [];
+    districtSelect.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'İlçe (opsiyonel)';
+    districtSelect.appendChild(placeholder);
+
+    districts.forEach(function (d) {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      districtSelect.appendChild(opt);
+    });
+  }
+
+  if (citySelect) {
+    citySelect.addEventListener('change', updateDistricts);
+    updateDistricts();
+  }
 });
 </script>
 {% endblock %}

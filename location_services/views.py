@@ -26,7 +26,7 @@ class LocationSearchAPIView(View):
         """Konum tabanlı arama yap"""
         try:
             if not request.user.is_authenticated:
-                return JsonResponse({'error': 'Authentication required'}, status=401)
+                return JsonResponse({'error': 'Kimlik doğrulama gerekli'}, status=401)
             
             data = json.loads(request.body)
             search_type = data.get('type')  # 'coordinates' or 'address'
@@ -38,7 +38,7 @@ class LocationSearchAPIView(View):
                 item_type = data.get('item_type')
                 
                 if not latitude or not longitude:
-                    return JsonResponse({'error': 'latitude and longitude required'}, status=400)
+                    return JsonResponse({'error': 'Enlem ve boylam gerekli'}, status=400)
                 
                 result = self.search_service.search_by_location(
                     latitude, longitude, radius_km, item_type
@@ -50,14 +50,14 @@ class LocationSearchAPIView(View):
                 item_type = data.get('item_type')
                 
                 if not address:
-                    return JsonResponse({'error': 'address required'}, status=400)
+                    return JsonResponse({'error': 'Adres gerekli'}, status=400)
                 
                 result = self.search_service.search_by_address(
                     address, radius_km, item_type
                 )
                 
             else:
-                return JsonResponse({'error': 'Invalid search type'}, status=400)
+                return JsonResponse({'error': 'Geçersiz arama tipi'}, status=400)
             
             return JsonResponse({
                 'success': True,
@@ -81,10 +81,10 @@ def create_lost_item(request):
         # Konum bilgilerini al
         latitude = data.get('latitude')
         longitude = data.get('longitude')
-        location_name = data.get('location_name', 'Unknown Location')
+        location_name = data.get('location_name', 'Bilinmeyen Konum')
         
         if not latitude or not longitude:
-            return Response({'error': 'latitude and longitude required'}, 
+            return Response({'error': 'Enlem ve boylam gerekli'}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
         # Konum oluştur
@@ -97,7 +97,7 @@ def create_lost_item(request):
         )
         
         if not location:
-            return Response({'error': 'Failed to create location'}, 
+            return Response({'error': 'Konum oluşturulamadı'}, 
                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Kayıp eşya ilanı oluştur
@@ -151,10 +151,10 @@ def create_found_item(request):
         # Konum bilgilerini al
         latitude = data.get('latitude')
         longitude = data.get('longitude')
-        location_name = data.get('location_name', 'Unknown Location')
+        location_name = data.get('location_name', 'Bilinmeyen Konum')
         
         if not latitude or not longitude:
-            return Response({'error': 'latitude and longitude required'}, 
+            return Response({'error': 'Enlem ve boylam gerekli'}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
         # Konum oluştur
@@ -167,7 +167,7 @@ def create_found_item(request):
         )
         
         if not location:
-            return Response({'error': 'Failed to create location'}, 
+            return Response({'error': 'Konum oluşturulamadı'}, 
                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Bulunan eşya ilanı oluştur
@@ -338,7 +338,7 @@ def get_location_matches(request):
         item_type = request.GET.get('item_type')  # 'lost' or 'found'
         
         if not item_id or not item_type:
-            return Response({'error': 'item_id and item_type required'}, 
+            return Response({'error': 'item_id ve item_type gerekli'}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
         if item_type == 'lost':
