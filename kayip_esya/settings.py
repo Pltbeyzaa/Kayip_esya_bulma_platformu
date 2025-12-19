@@ -65,6 +65,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'kayip_esya.context_processors.firebase_config',
             ],
         },
     },
@@ -184,10 +185,41 @@ GOOGLE_CLOUD_PROJECT_ID = config('GOOGLE_CLOUD_PROJECT_ID', default='')
 GOOGLE_APPLICATION_CREDENTIALS = config('GOOGLE_APPLICATION_CREDENTIALS', default='')
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='')
 
+# DEBUG: API key kontrolü
+if not GOOGLE_MAPS_API_KEY:
+    print("⚠️  UYARI: GOOGLE_MAPS_API_KEY bulunamadı! .env dosyasını kontrol edin.")
+    print(f"   BASE_DIR: {BASE_DIR}")
+    print(f"   .env dosyası yolu: {BASE_DIR / '.env'}")
+    env_file = BASE_DIR / '.env'
+    if env_file.exists():
+        print(f"   [OK] .env dosyasi mevcut")
+    else:
+        print(f"   [ERROR] .env dosyasi bulunamadi! env.example dosyasini kopyalayin.")
+else:
+    print(f"[OK] GOOGLE_MAPS_API_KEY yuklendi: {GOOGLE_MAPS_API_KEY[:10]}... (uzunluk: {len(GOOGLE_MAPS_API_KEY)})")
+
+# E-posta ayarları (hoş geldiniz maili vb. için)
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
+# Geliştirme ortamında mailleri terminale yaz (gerçek SMTP zorunlu olmasın)
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 # Firebase Configuration (for messaging/communication)
 FIREBASE_CREDENTIALS_PATH = config('FIREBASE_CREDENTIALS_PATH', default='')
 FIREBASE_DATABASE_URL = config('FIREBASE_DATABASE_URL', default='')
 FIREBASE_PROJECT_ID = config('FIREBASE_PROJECT_ID', default='')
+FIREBASE_API_KEY = config('FIREBASE_API_KEY', default='')
+FIREBASE_AUTH_DOMAIN = config('FIREBASE_AUTH_DOMAIN', default='')
+FIREBASE_STORAGE_BUCKET = config('FIREBASE_STORAGE_BUCKET', default='')
+FIREBASE_MESSAGING_SENDER_ID = config('FIREBASE_MESSAGING_SENDER_ID', default='')
+FIREBASE_APP_ID = config('FIREBASE_APP_ID', default='')
 
 # Redis Configuration (for Celery)
 REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')

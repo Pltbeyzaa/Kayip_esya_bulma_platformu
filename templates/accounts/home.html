@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static notification_tags %}
 
 {% block body_class %}{% if show_landing %}landing{% endif %}{% endblock %}
 
@@ -104,8 +104,7 @@
 <!-- Logo ön planda -->
 <div class="landing-center-fixed">
     <h1 class="landing-title">
-        <span class="landing-question-mark">?</span>
-        <span class="landing-brand">FINDUS</span>
+        <span class="landing-brand glow-brand">FINDUS</span>
     </h1>
     <p class="landing-sub">İlanları görmek için giriş yapın veya kayıt olun.</p>
     <div class="landing-actions">
@@ -122,24 +121,46 @@
             <i class="fas fa-stream me-2"></i>
             Son İlanlar
         </h3>
-        <div class="d-flex gap-2 filter-buttons">
-            <button class="btn btn-outline-primary btn-sm" onclick="filterPosts('all')">
-                <i class="fas fa-list me-1"></i>Tümü
-            </button>
-            <button class="btn btn-outline-primary btn-sm" onclick="filterPosts('lost')">
-                <i class="fas fa-exclamation-triangle me-1"></i>Kayıp
-            </button>
-            <button class="btn btn-outline-primary btn-sm" onclick="filterPosts('found')">
-                <i class="fas fa-hand-holding me-1"></i>Bulunan
-            </button>
-        </div>
+        <form method="get" class="row g-2 align-items-end mt-2">
+            <input type="hidden" name="child_filter" value="{{ child_filter|default:'all' }}">
+            <div class="col-md-3">
+                <label class="form-label mb-1">Tür</label>
+                <select class="form-select form-select-sm" name="post_type">
+                    <option value="all" {% if selected_type == 'all' %}selected{% endif %}>Tümü</option>
+                    <option value="lost" {% if selected_type == 'lost' %}selected{% endif %}>Kayıp</option>
+                    <option value="found" {% if selected_type == 'found' %}selected{% endif %}>Bulunan</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label mb-1">Şehir</label>
+                <select class="form-select form-select-sm" name="city">
+                    <option value="" {% if not selected_city %}selected{% endif %}>Tümü</option>
+                    {% for c in cities %}
+                    <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label mb-1">Ara (başlık/açıklama)</label>
+                <input type="text" class="form-control form-control-sm" name="q" value="{{ query }}" placeholder="Örn: cüzdan, telefon...">
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="fas fa-filter me-1"></i>Filtrele
+                </button>
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'home' %}">
+                    <i class="fas fa-undo"></i>
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- İlan Kartları -->
 <div class="row" id="postsContainer">
     {% for post in page_obj %}
-    <div class="col-lg-6 col-md-6 mb-4 post-card" data-type="{{ post.post_type }}">
+    <div class="col-lg-4 col-md-6 mb-4 post-card" data-type="{{ post.post_type }}">
+        <a href="{% url 'post_detail' post.id %}" class="post-card-link">
         <div class="post-item">
             <!-- Tweet Header -->
             <div class="tweet-header">
@@ -159,26 +180,6 @@
                     {{ post.days_ago }} gün önce
                     {% endif %}
                 </div>
-            </div>
-
-            <!-- Action Buttons - Header Altında -->
-            <div class="post-actions-top">
-                <a href="{% url 'post_detail' post.id %}" class="post-action-btn-small" style="text-decoration:none;">
-                    <i class="fas fa-eye"></i>
-                    <span>Detay</span>
-                </a>
-                {% if user.is_authenticated and user.id == post.user_id %}
-                <a href="{% url 'edit_post' post.id %}" class="post-action-btn-small" style="text-decoration:none;">
-                    <i class="fas fa-edit"></i>
-                    <span>Düzenle</span>
-                </a>
-                {% endif %}
-                {% if post.contact_phone %}
-                <a href="tel:{{ post.contact_phone }}" class="post-action-btn-small" style="text-decoration:none;">
-                    <i class="fas fa-phone"></i>
-                    <span>İletişim</span>
-                </a>
-                {% endif %}
             </div>
 
             <!-- Tweet Content -->
@@ -206,8 +207,16 @@
                 <!-- Tweet Badge - Alt Kısımda -->
                 <div class="tweet-badge-bottom {% if post.post_type == 'lost' %}lost{% else %}found{% endif %}">
                     <i
-                        class="fas fa-{% if post.post_type == 'lost' %}exclamation-triangle{% else %}hand-holding{% endif %}"></i>
-                    {{ post.get_post_type_display }}
+                        class="fas fa-{% if post.is_missing_child %}child{% elif post.post_type == 'lost' %}exclamation-triangle{% else %}hand-holding{% endif %}"></i>
+                    {% if post.is_missing_child %}
+                        {% if post.post_type == 'lost' %}
+                            Kayıp Çocuk
+                        {% else %}
+                            Bulunan Çocuk
+                        {% endif %}
+                    {% else %}
+                        {{ post.get_post_type_display }}
+                    {% endif %}
                     {% if post.is_urgent %}
                     <span class="tweet-badge urgent ms-2">
                         <i class="fas fa-fire"></i>Acil
@@ -217,6 +226,7 @@
 
             </div>
         </div>
+        </a>
     </div>
     {% empty %}
     <div class="col-12">

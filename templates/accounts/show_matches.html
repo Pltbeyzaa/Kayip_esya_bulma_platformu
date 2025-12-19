@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eşleşen İlanlar - FindUs{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Başlık -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
+                <div class="card-body p-4">
+                    <h3 class="text-primary-green mb-3">
+                        <i class="fas fa-search me-2"></i>
+                        Görüntü Eşleştirme Sonuçları
+                    </h3>
+                    <p class="mb-0" style="color: var(--text-secondary);">
+                        <strong>{{ post.get_post_type_display }}</strong> ilanınız için <strong>{{ matches_count }}</strong> adet benzer ilan bulundu.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İlanınız -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
+                <div class="card-header" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color);">
+                    <h5 class="mb-0" style="color: var(--text-primary);">
+                        <i class="fas fa-file-alt me-2"></i>İlanınız
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            {% if post.image %}
+                                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="fas fa-image fa-3x" style="color: var(--text-secondary);"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h5 style="color: var(--text-primary);">{{ post.title }}</h5>
+                            <p style="color: var(--text-secondary);">{{ post.description|truncatewords:30 }}</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge" style="background: var(--primary-green);">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ post.city }}{% if post.district %}, {{ post.district }}{% endif %}
+                                </span>
+                                <span class="badge" style="background: var(--dark-surface-light); color: var(--text-secondary);">
+                                    <i class="fas fa-calendar me-1"></i>{{ post.created_at|date:"d.m.Y" }}
+                                </span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{% url 'post_detail' post.id %}" class="btn btn-sm" style="background: var(--primary-green); color: white; border: none;">
+                                    <i class="fas fa-eye me-1"></i>İlan Detayı
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Eşleşen İlanlar -->
+    {% if matched_posts %}
+    <div class="row">
+        <div class="col-12 mb-3">
+            <h4 style="color: var(--text-primary);">
+                <i class="fas fa-check-circle me-2 text-primary-green"></i>
+                Eşleşen İlanlar ({{ matches_count }})
+            </h4>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for match in matched_posts %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow h-100" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px; transition: transform 0.2s;">
+                <div class="card-header" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0" style="color: var(--text-primary);">
+                            <i class="fas fa-{{ match.post.post_type|yesno:'exclamation-triangle,hand-holding' }} me-2"></i>
+                            {{ match.post.get_post_type_display }}
+                        </h6>
+                        <span class="badge" style="background: {% if match.similarity_percent >= 80 %}var(--primary-green){% elif match.similarity_percent >= 60 %}#ffa500{% else %}#ff6b6b{% endif %};">
+                            %{{ match.similarity_percent }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if match.post.image %}
+                        <img src="{{ match.post.image.url }}" alt="{{ match.post.title }}" class="img-fluid rounded mb-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary rounded d-flex align-items-center justify-content-center mb-3" style="height: 200px;">
+                            <i class="fas fa-image fa-2x" style="color: var(--text-secondary);"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <h6 style="color: var(--text-primary); margin-bottom: 0.5rem;">{{ match.post.title }}</h6>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">{{ match.post.description|truncatewords:15 }}</p>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small style="color: var(--text-secondary);">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ match.post.city }}{% if match.post.district %}, {{ match.post.district }}{% endif %}
+                            </small>
+                        </div>
+                        <div class="progress" style="height: 8px; background: var(--dark-surface-light);">
+                            <div class="progress-bar" 
+                                 role="progressbar" 
+                                 style="width: {{ match.similarity_percent }}%; background: {% if match.similarity_percent >= 80 %}var(--primary-green){% elif match.similarity_percent >= 60 %}#ffa500{% else %}#ff6b6b{% endif %};"
+                                 aria-valuenow="{{ match.similarity_percent }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small style="color: var(--text-secondary);">Benzerlik: %{{ match.similarity_percent }}</small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'post_detail' match.post.id %}" class="btn btn-sm" style="background: var(--primary-green); color: white; border: none;">
+                            <i class="fas fa-eye me-1"></i>Detaylı İncele
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-search fa-3x mb-3" style="color: var(--text-secondary);"></i>
+                    <h5 style="color: var(--text-primary);">Eşleşen ilan bulunamadı</h5>
+                    <p style="color: var(--text-secondary);">Şu an için ilanınızla eşleşen başka bir ilan bulunmuyor. Daha sonra tekrar kontrol edebilirsiniz.</p>
+                    <a href="{% url 'post_detail' post.id %}" class="btn" style="background: var(--primary-green); color: white; border: none;">
+                        <i class="fas fa-arrow-left me-1"></i>İlan Detayına Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Geri Dön Butonu -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+</style>
+{% endblock %}
+

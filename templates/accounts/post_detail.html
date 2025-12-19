@@ -5,10 +5,28 @@
 
 {% block content %}
 <div class="row justify-content-center post-detail">
-  <div class="col-lg-10 col-xl-8">
+  <div class="col-xl-8 col-lg-7">
     <div class="card shadow" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
-      <div class="card-header" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color);">
-        <h4 class="mb-0 text-primary-green">{{ post.title }}</h4>
+      <div class="card-header d-flex justify-content-between align-items-center" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color);">
+        <h4 class="mb-0 text-primary-green">
+          {{ post.title }}
+        </h4>
+        <div class="d-flex gap-2">
+          {% if post.is_missing_child %}
+            <span class="badge bg-danger">
+              {% if post.post_type == 'lost' %}Kayıp Çocuk{% else %}Bulunan Çocuk{% endif %}
+            </span>
+          {% else %}
+            {% if post.post_type == 'lost' %}
+              <span class="badge bg-danger">Kayıp Eşya</span>
+            {% else %}
+              <span class="badge bg-success">Bulunan Eşya</span>
+            {% endif %}
+          {% endif %}
+          {% if post.is_urgent %}
+            <span class="badge bg-warning text-dark">Acil</span>
+          {% endif %}
+        </div>
       </div>
       <div class="card-body p-4">
         <div class="row g-4">
@@ -24,15 +42,14 @@
           <div class="col-md-7">
             <p class="text-muted mb-2"><i class="fas fa-map-marker-alt me-2"></i>{{ post.city }}{% if post.district %}, {{ post.district }}{% endif %} — {{ post.location }}</p>
             <div class="mb-3" style="white-space:pre-wrap; color: var(--text-primary);">{{ post.description }}</div>
-            <div class="d-flex gap-2 flex-wrap">
-              {% if post.post_type == 'lost' %}
-              <span class="badge bg-danger">Kayıp Eşya</span>
-              {% else %}
-              <span class="badge bg-success">Bulunan Eşya</span>
-              {% endif %}
-              {% if post.is_urgent %}<span class="badge bg-warning text-dark">Acil</span>{% endif %}
+            
+            <!-- Google Maps Haritası -->
+            {% if google_maps_api_key %}
+            <div class="mb-3">
+              <div id="map" style="width: 100%; height: 260px; border-radius: 8px; overflow: hidden;"></div>
             </div>
-            <hr />
+            {% endif %}
+            <hr class="mt-0" />
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div class="d-flex align-items-center gap-2">
                 <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;background: linear-gradient(135deg, var(--primary-green), var(--secondary-blue)); color:#fff; font-weight:700;">
@@ -44,14 +61,12 @@
                 </div>
               </div>
               <div class="d-flex gap-2">
-                {% if post.contact_phone %}
-                <a class="btn btn-outline-light" href="tel:{{ post.contact_phone }}"><i class="fas fa-phone me-2"></i>Telefon</a>
-                {% endif %}
-                {% if post.contact_email %}
-                <a class="btn btn-outline-info" href="mailto:{{ post.contact_email }}"><i class="fas fa-envelope me-2"></i>E-posta</a>
-                {% endif %}
                 {% if user.is_authenticated and user.id == post.user_id %}
                 <a class="btn btn-warning" href="{% url 'edit_post' post.id %}"><i class="fas fa-edit me-2"></i>Düzenle</a>
+                  <form method="post" action="{% url 'delete_post' post.id %}" onsubmit="return confirm('İlanı silmek istediğinize emin misiniz?');" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-2"></i>Sil</button>
+                  </form>
                 {% endif %}
               </div>
             </div>
@@ -60,7 +75,152 @@
       </div>
     </div>
   </div>
+
+  <div class="col-xl-4 col-lg-5 mt-4 mt-lg-0">
+    <div class="card shadow h-100" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
+      <div class="card-header" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color);">
+        <h5 class="mb-0 text-primary-green d-flex align-items-center gap-2">
+          <i class="fas fa-bell"></i> 
+          {% if post.is_missing_child %}
+            <i class="fas fa-child me-1"></i>Eşleşen Çocuk İlanları
+          {% else %}
+            Eşleşen İlanlar
+          {% endif %}
+          {% if matched_posts %}({{ matches_count }}){% endif %}
+        </h5>
+      </div>
+      <div class="card-body p-3">
+        {% if matched_posts %}
+        <div class="d-flex flex-column gap-3">
+          {% for match in matched_posts %}
+          <div class="p-2 rounded" style="background: var(--dark-surface-light); border: 1px solid var(--border-color);">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge" style="background: {% if match.post.post_type == 'lost' %}#dc3545{% else %}var(--primary-green){% endif %};">
+                {% if match.post.is_missing_child %}
+                  <i class="fas fa-child me-1"></i>
+                  {% if match.post.post_type == 'lost' %}
+                    Kayıp Çocuk
+                  {% else %}
+                    Bulunan Çocuk
+                {% endif %}
+                {% else %}
+                {{ match.post.get_post_type_display }}
+                {% endif %}
+              </span>
+              <span class="badge" style="background: {% if match.similarity_percent >= 80 %}var(--primary-green){% elif match.similarity_percent >= 60 %}#ffa500{% else %}#ff6b6b{% endif %}; font-size: 0.9rem; padding: 0.35em 0.65em;">
+                %{{ match.similarity_percent|floatformat:0 }}
+              </span>
+            </div>
+            <div class="d-flex gap-2">
+              <div style="width:70px; flex-shrink: 0;">
+                {% if match.post.image %}
+                <img src="{{ match.post.image.url }}" alt="{{ match.post.title }}" class="img-fluid rounded" style="height:70px; width:70px; object-fit: cover;">
+                {% else %}
+                <div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="height:70px; width:70px;">
+                  <i class="fas fa-image" style="color: var(--text-secondary);"></i>
+                </div>
+                {% endif %}
+              </div>
+              <div class="flex-grow-1">
+                <a href="{% url 'post_detail' match.post.id %}" style="color: var(--text-primary); font-weight:600; display:block; margin-bottom:4px; text-decoration: none;">
+                  {{ match.post.title|truncatewords:6 }}
+                </a>
+                <small style="color: var(--text-secondary);">
+                  <i class="fas fa-map-marker-alt me-1"></i>{{ match.post.city }}{% if match.post.district %}, {{ match.post.district }}{% endif %}
+                </small>
+                {% if user.is_authenticated %}
+                <div class="mt-2 d-flex gap-2">
+                  {% if user.id != match.post.user.id %}
+                    <a href="{% url 'start_chat_with_user' match.post.user.id %}" class="btn btn-sm btn-outline-success">
+                      <i class="fas fa-comments me-1"></i>Sohbet Et
+                    </a>
+                  {% endif %}
+                  {% if post.post_type == 'lost' and match.post.post_type == 'found' and user.id == post.user_id and post.status == 'active' and match.post.status == 'active' %}
+                    <form method="post" action="{% url 'mark_match_as_found' post.id match.post.id %}" class="d-inline" onsubmit="return confirm('Bu eşleşmeyi sonlandırmak ve kaybettiğinizi bulduğunuzu işaretlemek istediğinize emin misiniz?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-success">
+                        <i class="fas fa-check-circle me-1"></i>Kaybettiğimi Buldum
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+                {% endif %}
+                <div class="progress mt-2" style="height: 6px; background: var(--dark-surface); border-radius: 3px;">
+                  <div class="progress-bar" 
+                       role="progressbar" 
+                       style="width: {{ match.similarity_percent }}%; background: {% if match.similarity_percent >= 80 %}var(--primary-green){% elif match.similarity_percent >= 60 %}#ffa500{% else %}#ff6b6b{% endif %};"
+                       aria-valuenow="{{ match.similarity_percent }}" 
+                       aria-valuemin="0" 
+                       aria-valuemax="100">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if matches_count > 5 %}
+        <div class="text-center mt-3">
+          <a href="{% url 'show_matches' post.id %}" class="btn btn-outline-primary w-100" style="border-color: var(--border-color); color: var(--text-primary);">
+            <i class="fas fa-list me-1"></i>Tüm Eşleşmeleri Gör ({{ matches_count }})
+          </a>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-search fa-3x mb-3" style="color: var(--text-secondary); opacity: 0.5;"></i>
+          <p style="color: var(--text-secondary);">Henüz eşleşme bulunamadı</p>
+          <small style="color: var(--text-secondary); opacity: 0.7;">Eşleşmeler arka planda işleniyor...</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
+
+{% if matched_posts %}
+<script>
+// Eşleşme bulunduğunda üstteki "arka planda işleniyor" mesajını kaldır
+// ve kısa süreli bir başarı bildirimi göster
+document.addEventListener('DOMContentLoaded', function() {
+  // Eski başarı mesajını (eşleşmeler arka planda işleniyor) kaldır
+  const alerts = document.querySelectorAll('.alert');
+  alerts.forEach(function(alertEl) {
+    if (alertEl.textContent.includes('Eşleşmeler arka planda işleniyor')) {
+      alertEl.remove();
+    }
+  });
+
+  // Yeni kısa bildirim oluştur
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification match-found';
+  toast.innerHTML = `
+    <div class="toast-content">
+      <i class="fas fa-check-circle me-2"></i>
+      İlanınız için eşleşme bulundu!
+    </div>
+  `;
+
+  document.body.appendChild(toast);
+
+  // Animasyonla göster
+  setTimeout(function() {
+    toast.classList.add('show');
+  }, 100);
+
+  // Birkaç saniye sonra gizle ve kaldır
+  setTimeout(function() {
+    toast.classList.remove('show');
+    setTimeout(function() {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
+  }, 4000);
+});
+</script>
+{% endif %}
+
 <style>
 .post-detail, .post-detail .card, .post-detail .card-body, .post-detail .card-header h4 {
   color: var(--text-primary) !important;
@@ -74,6 +234,124 @@
 }
 .post-detail a:not(.btn):hover { text-decoration: underline; }
 </style>
+{% endblock %}
+
+{% block google_maps_script %}
+{% if google_maps_api_key %}
+<script>
+let map;
+let geocoder;
+let marker;
+
+// initMap'i global olarak tanımla (callback için)
+window.initMap = function() {
+    // Harita başlangıç konumu (Türkiye merkezi)
+    const defaultLocation = { lat: 39.9334, lng: 32.8597 };
+    
+    // Harita oluştur
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 15,
+        center: defaultLocation,
+        styles: [
+            {
+                featureType: "all",
+                elementType: "geometry",
+                stylers: [{ color: "#242424" }]
+            },
+            {
+                featureType: "all",
+                elementType: "labels.text.stroke",
+                stylers: [{ visibility: "off" }]
+            },
+            {
+                featureType: "all",
+                elementType: "labels.text.fill",
+                stylers: [{ color: "#ffffff" }]
+            },
+            {
+                featureType: "water",
+                elementType: "geometry",
+                stylers: [{ color: "#17263c" }]
+            }
+        ]
+    });
+    
+    geocoder = new google.maps.Geocoder();
+    
+    // İlan konumunu haritada göster
+    const address = "{{ post.city }}{% if post.district %}, {{ post.district }}{% endif %}, {{ post.location }}";
+    
+    geocoder.geocode({ address: address }, function(results, status) {
+        if (status === 'OK') {
+            map.setCenter(results[0].geometry.location);
+            map.setZoom(15);
+            
+            marker = new google.maps.Marker({
+                map: map,
+                position: results[0].geometry.location,
+                title: "{{ post.title }}",
+                animation: google.maps.Animation.DROP
+            });
+            
+            // Bilgi penceresi
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div style="color: #111; padding: 8px;">
+                        <strong>{{ post.title }}</strong><br>
+                        <small>{{ post.city }}{% if post.district %}, {{ post.district }}{% endif %}</small><br>
+                        <small>{{ post.location }}</small>
+                    </div>
+                `
+            });
+            
+            marker.addListener('click', function() {
+                infoWindow.open(map, marker);
+            });
+            
+            // İlk açılışta bilgi penceresini göster
+            infoWindow.open(map, marker);
+        } else {
+            console.error('Geocoding hatası:', status);
+            // Hata durumunda varsayılan konumu göster
+            map.setCenter(defaultLocation);
+        }
+    });
+};
+
+// API key kontrolü - DEBUG
+var apiKeyValue = '{{ google_maps_api_key }}';
+console.log('DEBUG: google_maps_api_key değeri:', apiKeyValue);
+console.log('DEBUG: google_maps_api_key uzunluğu:', apiKeyValue.length);
+{% if not google_maps_api_key or google_maps_api_key == '' %}
+console.error('Google Maps API key bulunamadı! Lütfen .env dosyasında GOOGLE_MAPS_API_KEY değerini kontrol edin.');
+const mapDiv = document.getElementById('map');
+if (mapDiv) {
+    mapDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #fff;"><p style="color: #ff6b6b;">Google Maps API key bulunamadı. Lütfen .env dosyasını kontrol edin.</p></div>';
+}
+{% else %}
+console.log('Google Maps API Key yüklendi:', apiKeyValue.substring(0, 10) + '...');
+// Script'i yükle
+(function() {
+    const apiKey = apiKeyValue;
+    if (!apiKey || apiKey.trim() === '' || apiKey === 'None') {
+        console.error('API key boş veya geçersiz!', apiKey);
+        return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=' + apiKey + '&libraries=places&callback=initMap';
+    script.async = true;
+    script.defer = true;
+    script.onerror = function() {
+        console.error('Google Maps API yüklenemedi. API key\'inizi kontrol edin.');
+        const mapDiv = document.getElementById('map');
+        if (mapDiv) {
+            mapDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #fff;"><p style="color: #ff6b6b;">Google Maps yüklenemedi. Lütfen API key\'inizi ve referrer ayarlarınızı kontrol edin.</p></div>';
+        }
+    };
+    document.head.appendChild(script);
+})();
+{% endif %}
+{% endif %}
 {% endblock %}
 
 

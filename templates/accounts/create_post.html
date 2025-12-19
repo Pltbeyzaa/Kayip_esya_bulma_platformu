@@ -34,6 +34,42 @@
               </a>
             </div>
           </div>
+          <div class="col-md-6">
+            <div class="p-4 h-100" style="background: rgba(239,68,68,0.08); border: 1px solid var(--border-color); border-radius: 12px;">
+              <h5 class="mb-2" style="color:#ef4444;"><i class="fas fa-child me-2"></i>Kayıp Çocuk İlanı</h5>
+              <p class="text-muted">Kayıp çocuk ilanı oluşturmak için detaylı bilgi verin. Sistem otomatik olarak eşleşmeleri bulacaktır.</p>
+              <a class="btn" href="{% url 'create_missing_child' %}" style="background: #ef4444; border: none; color: white;">
+                <i class="fas fa-plus me-2"></i>Kayıp Çocuk İlanı Oluştur
+              </a>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-4 h-100" style="background: rgba(251,191,36,0.08); border: 1px solid var(--border-color); border-radius: 12px;">
+              <h5 class="mb-2" style="color:#fbbf24;"><i class="fas fa-child me-2"></i>Bulunan Çocuk İlanı</h5>
+              <p class="text-muted">Bir çocuk bulduysanız ailesine ulaşması için ilan oluşturun. Sistem otomatik olarak eşleşmeleri bulacaktır.</p>
+              <a class="btn" href="{% url 'create_found_child' %}" style="background: #fbbf24; border: none; color: #111111;">
+                <i class="fas fa-plus me-2"></i>Bulunan Çocuk İlanı Oluştur
+              </a>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-4 h-100" style="background: rgba(168,85,247,0.08); border: 1px solid var(--border-color); border-radius: 12px;">
+              <h5 class="mb-2" style="color:#a855f7;"><i class="fas fa-paw me-2"></i>Kayıp Hayvan İlanı</h5>
+              <p class="text-muted">Hayvanınızı kaybettiyseniz detaylı bilgi içeren bir ilan oluşturun. Sistem otomatik olarak eşleşmeleri bulacaktır.</p>
+              <a class="btn" href="{% url 'create_lost_animal' %}" style="background: #a855f7; border: none; color: white;">
+                <i class="fas fa-plus me-2"></i>Kayıp Hayvan İlanı Oluştur
+              </a>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-4 h-100" style="background: rgba(236,72,153,0.08); border: 1px solid var(--border-color); border-radius: 12px;">
+              <h5 class="mb-2" style="color:#ec4899;"><i class="fas fa-paw me-2"></i>Bulunan Hayvan İlanı</h5>
+              <p class="text-muted">Bir hayvan bulduysanız sahibine ulaşması için ilan oluşturun. Sistem otomatik olarak eşleşmeleri bulacaktır.</p>
+              <a class="btn" href="{% url 'create_found_animal' %}" style="background: #ec4899; border: none; color: white;">
+                <i class="fas fa-plus me-2"></i>Bulunan Hayvan İlanı Oluştur
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>

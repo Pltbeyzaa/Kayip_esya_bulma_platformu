@@ -319,7 +319,9 @@ class ChatService:
                         'last_name': message.sender.last_name
                     },
                     'created_at': message.created_at.isoformat(),
+                    'time': message.created_at.strftime("%H:%M"),
                     'is_edited': message.is_edited,
+                    'is_me': str(message.sender.id) == str(user_id),
                     'reply_to': {
                         'id': str(message.reply_to.id),
                         'content': message.reply_to.content[:50] + "..."

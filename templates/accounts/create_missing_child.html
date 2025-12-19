@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kayıp Çocuk İlanı Oluştur - FindUs{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
+            <div class="card-header text-center" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color); padding: 1.5rem;">
+                <h4 class="mb-0 text-primary-green">
+                    <i class="fas fa-child me-2"></i>
+                    Kayıp Çocuk İlanı Oluştur
+                </h4>
+                <p class="mb-0 mt-2" style="font-size: 0.9rem; color: var(--text-secondary);">Kayıp çocuk ilanı oluşturmak için detaylı bilgi verin</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" id="missingChildForm">
+                    {% csrf_token %}
+                    
+                    <!-- Çocuk Bilgileri -->
+                    <div class="mb-4" style="border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; background: var(--dark-surface-light);">
+                        <h5 class="mb-3 text-primary-green">
+                            <i class="fas fa-user-child me-2"></i>Çocuk Bilgileri
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.child_name.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Çocuğun Adı <span class="text-danger">*</span>
+                                </label>
+                                {{ form.child_name }}
+                                {% if form.child_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.child_name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="{{ form.child_age.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Yaş <span class="text-danger">*</span>
+                                </label>
+                                {{ form.child_age }}
+                                {% if form.child_age.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.child_age.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="{{ form.child_gender.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Cinsiyet <span class="text-danger">*</span>
+                                </label>
+                                {{ form.child_gender }}
+                                {% if form.child_gender.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.child_gender.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="{{ form.child_height.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Boy (cm)
+                                </label>
+                                {{ form.child_height }}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="{{ form.child_weight.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Kilo (kg)
+                                </label>
+                                {{ form.child_weight }}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="{{ form.missing_date.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Kaybolma Tarihi <span class="text-danger">*</span>
+                                </label>
+                                {{ form.missing_date }}
+                                {% if form.missing_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.missing_date.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.child_hair_color.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Saç Rengi
+                                </label>
+                                {{ form.child_hair_color }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.child_eye_color.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Göz Rengi
+                                </label>
+                                {{ form.child_eye_color }}
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="{{ form.child_physical_features.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                    Fiziksel Özellikler
+                                </label>
+                                {{ form.child_physical_features }}
+                                <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">
+                                    Örn: Yüzünde yara izi var, sol kolu kırık, vb.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Başlık -->
+                    <div class="mb-4">
+                        <label for="{{ form.title.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-heading me-2"></i>Başlık <span class="text-danger">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.title.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Örn: Kayıp Çocuk - İzmir Konak</div>
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div class="mb-4">
+                        <label for="{{ form.description.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-align-left me-2"></i>Açıklama <span class="text-danger">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.description.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Çocuk hakkında detaylı bilgi veriniz</div>
+                    </div>
+                    
+                    <!-- Şehir ve İlçe -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.city.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-city me-2"></i>Şehir <span class="text-danger">*</span>
+                            </label>
+                            {{ form.city }}
+                            {% if form.city.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.city.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.district.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-map-marker-alt me-2"></i>İlçe
+                            </label>
+                            {{ form.district }}
+                        </div>
+                    </div>
+                    
+                    <!-- Konum -->
+                    <div class="mb-4">
+                        <label for="{{ form.location.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-map-pin me-2"></i>Konum <span class="text-danger">*</span>
+                        </label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.location.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Örn: Konak Meydanı, Kadıköy Sahil</div>
+                    </div>
+                    
+                    <!-- Son Görüldüğü Yer -->
+                    <div class="mb-4">
+                        <label for="{{ form.last_seen_location.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-map-marked-alt me-2"></i>Son Görüldüğü Yer
+                        </label>
+                        {{ form.last_seen_location }}
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Çocuğun son görüldüğü yer</div>
+                    </div>
+                    
+                    <!-- Son Görüldüğünde Üzerindeki Kıyafetler -->
+                    <div class="mb-4">
+                        <label for="{{ form.last_seen_clothing.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-tshirt me-2"></i>Son Görüldüğünde Üzerindeki Kıyafetler
+                        </label>
+                        {{ form.last_seen_clothing }}
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Son görüldüğünde üzerindeki kıyafetlerin detaylı açıklaması</div>
+                    </div>
+                    
+                    <!-- İletişim Bilgileri -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.contact_phone.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-phone me-2"></i>İletişim Telefonu <span class="text-danger">*</span>
+                            </label>
+                            {{ form.contact_phone }}
+                            {% if form.contact_phone.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.contact_phone.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="{{ form.contact_email.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                                <i class="fas fa-envelope me-2"></i>İletişim E-posta
+                            </label>
+                            {{ form.contact_email }}
+                        </div>
+                    </div>
+                    
+                    <!-- Fotoğraf -->
+                    <div class="mb-4">
+                        <label for="{{ form.image.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <i class="fas fa-image me-2"></i>Çocuğun Fotoğrafı <span class="text-danger">*</span>
+                        </label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.image.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Çocuğun fotoğrafını yükleyiniz (JPG, PNG - Maksimum 5MB)</div>
+                    </div>
+                    
+                    <!-- Acil İlan -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.is_urgent }}
+                            <label class="form-check-label" for="{{ form.is_urgent.id_for_label }}" style="color: var(--text-primary);">
+                                <i class="fas fa-fire me-2 text-warning"></i>Acil İlan olarak işaretle
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Hataları -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Butonlar -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-success" style="background: var(--primary-green); border: none;">
+                            <i class="fas fa-paper-plane me-2"></i>İlanı Oluştur
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    background: var(--dark-surface) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.card-body, .card-header {
+    color: var(--text-primary) !important;
+}
+
+.form-control, .form-select {
+    background: var(--dark-surface-light) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary) !important;
+    opacity: 0.7 !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background: var(--dark-surface-light) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25) !important;
+}
+
+.form-label {
+    color: var(--text-primary) !important;
+}
+
+.form-text {
+    color: var(--text-secondary) !important;
+    opacity: 0.9 !important;
+}
+
+.form-select option {
+    background: #ffffff !important;
+    color: #111111 !important;
+}
+
+.form-check-label {
+    color: var(--text-primary) !important;
+}
+
+input[type="date"] {
+    color: var(--text-primary) !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.btn-outline-secondary {
+    border-color: var(--border-color) !important;
+    color: var(--text-secondary) !important;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--dark-surface-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    border-color: #ef4444 !important;
+    color: #ff6b6b !important;
+}
+</style>
+<script src="{% static 'js/city_districts.js' %}"></script>
+<script>
+// Şehre göre ilçe seçimi
+document.addEventListener('DOMContentLoaded', function() {
+  const citySelect = document.getElementById('citySelect');
+  const districtSelect = document.getElementById('districtSelect');
+  function updateDistricts() {
+    if (!citySelect || !districtSelect) return;
+    const city = citySelect.value;
+    const districts = CITY_DISTRICTS[city] || [];
+    districtSelect.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'İlçe (opsiyonel)';
+    districtSelect.appendChild(placeholder);
+
+    districts.forEach(function (d) {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      districtSelect.appendChild(opt);
+    });
+  }
+
+  if (citySelect) {
+    citySelect.addEventListener('change', updateDistricts);
+    updateDistricts();
+  }
+});
+</script>
+{% endblock %}
+

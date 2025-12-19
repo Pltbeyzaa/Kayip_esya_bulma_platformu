@@ -214,6 +214,7 @@ class LostItemPostForm(forms.ModelForm):
         ('accessories', 'Aksesuar'),
         ('documents', 'Belge/Kimlik'),
         ('clothing', 'Giyim'),
+        ('animals', 'Hayvan'),
         ('others', 'Diğer')
     ]
 
@@ -314,6 +315,305 @@ class LostItemPostForm(forms.ModelForm):
 
         if parts:
             desc = cleaned.get('description') or ''
-            extra = "\n\n[" + " | ".join(parts) + "]"
+            # Eski formatta eklenmiş kategori bloğunu (tek satır, | ile ayrılmış) temizle
+            marker = "\n\n[Kategori:"
+            idx = desc.find(marker)
+            if idx != -1:
+                desc = desc[:idx].rstrip()
+
+            # Yeni format: her özellik alt alta görünsün
+            extra = "\n\n[" + "\n".join(parts) + "]"
             cleaned['description'] = (desc + extra).strip()
         return cleaned
+
+
+class MissingChildPostForm(forms.ModelForm):
+    """Kayıp çocuk ilanı formu"""
+    
+    # Türk şehirleri - LostItemPostForm'dan kopyala
+    TURKISH_CITIES = LostItemPostForm.TURKISH_CITIES
+    
+    city = forms.ChoiceField(
+        choices=TURKISH_CITIES,
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'id': 'citySelect'
+        }),
+        label='Şehir'
+    )
+    
+    class Meta:
+        model = ItemPost
+        fields = [
+            'title', 'description', 'city', 'district', 'location', 
+            'contact_phone', 'contact_email', 'image', 'is_urgent',
+            'child_name', 'child_age', 'child_gender', 'child_height', 
+            'child_weight', 'child_hair_color', 'child_eye_color',
+            'child_physical_features', 'missing_date', 'last_seen_location',
+            'last_seen_clothing'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Örn: Kayıp Çocuk - İzmir Konak'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Çocuk hakkında detaylı bilgi veriniz...'
+            }),
+            'district': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'districtSelect',
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Örn: Konak Meydanı, Kadıköy Sahil'
+            }),
+            'contact_phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '05XX XXX XX XX'
+            }),
+            'contact_email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'E-posta adresiniz (opsiyonel)'
+            }),
+            'image': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
+            'is_urgent': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'child_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Çocuğun adı'
+            }),
+            'child_age': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Yaş',
+                'min': 0,
+                'max': 18
+            }),
+            'child_gender': forms.Select(attrs={
+                'class': 'form-select'
+            }, choices=[('', 'Seçiniz'), ('erkek', 'Erkek'), ('kız', 'Kız')]),
+            'child_height': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Boy (cm)',
+                'min': 0,
+                'max': 200
+            }),
+            'child_weight': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Kilo (kg)',
+                'min': 0,
+                'max': 100
+            }),
+            'child_hair_color': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Örn: Siyah, Sarı, Kahverengi'
+            }),
+            'child_eye_color': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Örn: Mavi, Yeşil, Kahverengi'
+            }),
+            'child_physical_features': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Örn: Yüzünde yara izi var, sol kolu kırık, vb.'
+            }),
+            'missing_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'last_seen_location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Son görüldüğü yer'
+            }),
+            'last_seen_clothing': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Son görüldüğünde üzerindeki kıyafetler'
+            }),
+        }
+        labels = {
+            'title': 'Başlık',
+            'description': 'Açıklama',
+            'district': 'İlçe',
+            'location': 'Konum',
+            'contact_phone': 'İletişim Telefonu',
+            'contact_email': 'İletişim E-posta',
+            'image': 'Çocuğun Fotoğrafı',
+            'is_urgent': 'Acil İlan',
+            'child_name': 'Çocuğun Adı',
+            'child_age': 'Yaş',
+            'child_gender': 'Cinsiyet',
+            'child_height': 'Boy (cm)',
+            'child_weight': 'Kilo (kg)',
+            'child_hair_color': 'Saç Rengi',
+            'child_eye_color': 'Göz Rengi',
+            'child_physical_features': 'Fiziksel Özellikler',
+            'missing_date': 'Kaybolma Tarihi',
+            'last_seen_location': 'Son Görüldüğü Yer',
+            'last_seen_clothing': 'Son Görüldüğünde Üzerindeki Kıyafetler',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['district'].required = False
+        self.fields['contact_email'].required = False
+        self.fields['image'].required = True  # Çocuk ilanları için fotoğraf zorunlu
+        self.fields['child_name'].required = True
+        self.fields['child_age'].required = True
+        self.fields['child_gender'].required = True
+        self.fields['missing_date'].required = True
+        self.fields['child_physical_features'].required = False  # Fiziksel özellikler opsiyonel
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.is_missing_child = True
+        instance.post_type = 'lost'  # Kayıp çocuk ilanları her zaman 'lost' tipinde
+        if commit:
+            instance.save()
+        return instance
+
+
+class FoundChildPostForm(forms.ModelForm):
+    """Bulunan çocuk ilanı formu"""
+    
+    # Türk şehirleri - LostItemPostForm'dan kopyala
+    TURKISH_CITIES = LostItemPostForm.TURKISH_CITIES
+    
+    city = forms.ChoiceField(
+        choices=TURKISH_CITIES,
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'id': 'citySelect'
+        }),
+        label='Şehir'
+    )
+    
+    class Meta:
+        model = ItemPost
+        fields = [
+            'title', 'description', 'city', 'district', 'location', 
+            'contact_phone', 'contact_email', 'image', 'is_urgent',
+            'child_name', 'child_age', 'child_gender', 
+            'child_hair_color', 'child_eye_color',
+            'child_physical_features', 'missing_date', 'last_seen_location',
+            'last_seen_clothing'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Örn: Bulunan Çocuk - İzmir Konak'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Çocuk hakkında detaylı bilgi veriniz...'
+            }),
+            'district': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'districtSelect',
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Örn: Konak Meydanı, Kadıköy Sahil'
+            }),
+            'contact_phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '05XX XXX XX XX'
+            }),
+            'contact_email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'E-posta adresiniz (opsiyonel)'
+            }),
+            'image': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
+            'is_urgent': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'child_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Çocuğun adı (biliniyorsa)'
+            }),
+            'child_age': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Yaş (tahmini)',
+                'min': 0,
+                'max': 18
+            }),
+            'child_gender': forms.Select(attrs={
+                'class': 'form-select'
+            }, choices=[('', 'Seçiniz'), ('erkek', 'Erkek'), ('kız', 'Kız')]),
+            'child_hair_color': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Örn: Siyah, Sarı, Kahverengi'
+            }),
+            'child_eye_color': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Örn: Mavi, Yeşil, Kahverengi'
+            }),
+            'child_physical_features': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Örn: Yüzünde yara izi var, sol kolu kırık, vb.'
+            }),
+            'missing_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'last_seen_location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Çocuğun bulunduğu yer'
+            }),
+            'last_seen_clothing': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Çocuğun üzerindeki kıyafetler'
+            }),
+        }
+        labels = {
+            'title': 'Başlık',
+            'description': 'Açıklama',
+            'district': 'İlçe',
+            'location': 'Konum',
+            'contact_phone': 'İletişim Telefonu',
+            'contact_email': 'İletişim E-posta',
+            'image': 'Çocuğun Fotoğrafı',
+            'is_urgent': 'Acil İlan',
+            'child_name': 'Çocuğun Adı',
+            'child_age': 'Yaş (Tahmini)',
+            'child_gender': 'Cinsiyet',
+            'child_hair_color': 'Saç Rengi',
+            'child_eye_color': 'Göz Rengi',
+            'child_physical_features': 'Fiziksel Özellikler',
+            'missing_date': 'Bulunma Tarihi',
+            'last_seen_location': 'Bulunduğu Yer',
+            'last_seen_clothing': 'Üzerindeki Kıyafetler',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['district'].required = False
+        self.fields['contact_email'].required = False
+        self.fields['image'].required = True  # Çocuk ilanları için fotoğraf zorunlu
+        self.fields['child_name'].required = False  # Bulunan çocuk için ad bilinmeyebilir
+        self.fields['child_age'].required = False  # Tahmini olabilir
+        self.fields['child_gender'].required = True
+        self.fields['missing_date'].required = True  # Bulunma tarihi
+        self.fields['child_physical_features'].required = False  # Fiziksel özellikler opsiyonel
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.is_missing_child = True
+        instance.post_type = 'found'  # Bulunan çocuk ilanları 'found' tipinde
+        if commit:
+            instance.save()
+        return instance

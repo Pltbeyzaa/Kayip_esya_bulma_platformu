@@ -6,9 +6,15 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.contrib.auth import get_user_model
 import json
 from .services import ChatService, NotificationService
-from .models import ChatRoom, Message, Notification, UserDevice, ChatInvitation
+from .models import ChatRoom, Message, Notification, UserDevice, ChatInvitation, ChatRoomMembership
+
+User = get_user_model()
 
 
 class ChatAPIView(View):
@@ -61,6 +67,188 @@ class ChatAPIView(View):
                 'success': False,
                 'error': str(e)
             }, status=500)
+
+
+@login_required
+def start_chat_with_user(request, user_id: int):
+    """
+    Bir kullanıcı ile (ilan sahibi gibi) ikili sohbet başlat veya mevcut odaya yönlendir.
+    """
+    target_user = get_object_or_404(User, id=user_id)
+
+    # Kendisiyle sohbet açmaya çalışıyorsa profile dön
+    if target_user.id == request.user.id:
+        return redirect('profile')
+
+    chat_service = ChatService()
+
+    # Mevcut ikili oda var mı? (item_match tipinde)
+    existing_room = (
+        ChatRoom.objects
+        .filter(room_type='item_match', is_active=True, participants=request.user)
+        .filter(participants=target_user)
+        .first()
+    )
+
+    if not existing_room:
+        # Yeni oda oluştur
+        room_name = f"{request.user.first_name or request.user.username} & {target_user.first_name or target_user.username}"
+        description = "Eşleşen ilanlar için özel sohbet odası"
+
+        room = chat_service.create_room(
+            name=room_name,
+            description=description,
+            created_by_id=str(request.user.id),
+            room_type='item_match',
+        )
+
+        if room:
+            # Diğer kullanıcıyı da katılımcı olarak ekle
+            ChatRoomMembership.objects.get_or_create(
+                room=room,
+                user=target_user,
+                defaults={'role': 'member'},
+            )
+            # MongoDB / Firebase tarafını güncelle
+            chat_service._save_room_to_mongodb(room)  # mevcut yardımcıyı yeniden kullan
+
+            existing_room = room
+
+    if not existing_room:
+        # Her ihtimale karşı oda oluşturulamadıysa ana sayfaya dön
+        return redirect('home')
+
+    return redirect('chat_room', room_id=existing_room.id)
+
+
+@login_required
+def chat_room(request, room_id):
+    """
+    Basit web arayüzü ile sohbet odası.
+    Mesajlar Django üzerinden gelir, gönderilen her mesaj Firebase/Mongo'ya da yazılır.
+    """
+    room = get_object_or_404(
+        ChatRoom.objects.prefetch_related('participants'),
+        id=room_id,
+        is_active=True,
+    )
+
+    # Kullanıcı bu odanın katılımcısı değilse erişimi engelle
+    if not room.participants.filter(id=request.user.id).exists():
+        return redirect('home')
+
+    chat_service = ChatService()
+
+    if request.method == 'POST':
+        content = (request.POST.get('content') or '').strip()
+        if content:
+            chat_service.send_message(
+                room_id=str(room.id),
+                sender_id=str(request.user.id),
+                content=content,
+                message_type='text',
+            )
+        return redirect('chat_room', room_id=room.id)
+
+    # Son mesajları getir (en fazla 50)
+    chat_messages = chat_service.get_room_messages(
+        room_id=str(room.id),
+        user_id=str(request.user.id),
+        limit=50,
+        offset=0,
+    )
+    # Eski → yeni sıralı gelsin
+    chat_messages = list(sorted(chat_messages, key=lambda m: m['created_at']))
+
+    from django.conf import settings
+    
+    return render(
+        request,
+        'messaging/chat_room.html',
+        {
+            'room': room,
+            'chat_messages': chat_messages,
+            'FIREBASE_API_KEY': getattr(settings, 'FIREBASE_API_KEY', ''),
+            'FIREBASE_AUTH_DOMAIN': getattr(settings, 'FIREBASE_AUTH_DOMAIN', ''),
+            'FIREBASE_DATABASE_URL': getattr(settings, 'FIREBASE_DATABASE_URL', ''),
+            'FIREBASE_PROJECT_ID': getattr(settings, 'FIREBASE_PROJECT_ID', ''),
+            'FIREBASE_STORAGE_BUCKET': getattr(settings, 'FIREBASE_STORAGE_BUCKET', ''),
+            'FIREBASE_MESSAGING_SENDER_ID': getattr(settings, 'FIREBASE_MESSAGING_SENDER_ID', ''),
+            'FIREBASE_APP_ID': getattr(settings, 'FIREBASE_APP_ID', ''),
+        },
+    )
+
+
+@login_required
+def conversations_list(request):
+    """
+    Kullanıcının dahil olduğu tüm sohbet odalarını listele.
+    """
+    rooms = (
+        ChatRoom.objects
+        .filter(participants=request.user, is_active=True)
+        .prefetch_related('participants')
+        .order_by('-updated_at')
+    )
+
+    conversations = []
+    for room in rooms:
+        last_message = (
+            Message.objects
+            .filter(room=room)
+            .order_by('-created_at')
+            .select_related('sender')
+            .first()
+        )
+
+        # Karşı tarafın adını bul (tekli odalarda)
+        others = room.participants.exclude(id=request.user.id)
+        other_display = others.first().first_name or others.first().username if others.exists() else room.name
+
+        conversations.append({
+            'id': room.id,
+            'name': other_display,
+            'full_name': room.name,
+            'updated_at': room.updated_at,
+            'last_message': last_message.content if last_message else '',
+            'last_time': last_message.created_at.strftime("%H:%M") if last_message else '',
+        })
+
+    return render(
+        request,
+        'messaging/conversations.html',
+        {
+            'conversations': conversations,
+        },
+    )
+
+
+@login_required
+@require_POST
+def delete_conversation(request, room_id):
+    """
+    Kullanıcının kendi sohbet listesinden bir sohbeti silmesi (üyeliğini kaldırma).
+    Diğer katılımcıların sohbeti etkilenmez.
+    """
+    room = get_object_or_404(
+        ChatRoom.objects.prefetch_related('participants'),
+        id=room_id,
+        is_active=True,
+    )
+
+    # Kullanıcı bu odanın katılımcısı değilse sessizce geri dön
+    if not room.participants.filter(id=request.user.id).exists():
+        return redirect('conversations')
+
+    # Kullanıcının üyeliğini kaldır
+    ChatRoomMembership.objects.filter(room=room, user=request.user).delete()
+
+    # Eğer odada hiç katılımcı kalmadıysa odayı pasifleştir
+    if room.participants.count() == 0:
+        room.is_active = False
+        room.save(update_fields=['is_active'])
+
+    return redirect('conversations')
 
 
 @api_view(['POST'])
@@ -298,6 +486,110 @@ def get_notifications(request):
             'success': True,
             'notifications': notifications,
             'total_count': len(notifications)
+        })
+        
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_unread_count(request):
+    """Kullanıcının okunmamış mesaj gönderen kişi sayısını getir"""
+    try:
+        from messaging.models import ChatRoom, Message, MessageRead
+        
+        # Kullanıcının katıldığı aktif odalar
+        user_rooms = ChatRoom.objects.filter(
+            participants=request.user,
+            is_active=True
+        )
+        
+        # Farklı gönderen ID'lerini topla
+        unique_senders = set()
+        
+        for room in user_rooms:
+            # Bu odadaki, kullanıcının göndermediği mesajlar
+            unread_messages = Message.objects.filter(
+                room=room
+            ).exclude(
+                sender=request.user
+            )
+            
+            # Okunmuş mesajları çıkar
+            read_message_ids = MessageRead.objects.filter(
+                user=request.user,
+                message__room=room
+            ).values_list('message_id', flat=True)
+            
+            unread_messages = unread_messages.exclude(id__in=read_message_ids)
+            
+            # Bu odadaki okunmamış mesajların gönderenlerini ekle
+            sender_ids = unread_messages.values_list('sender_id', flat=True).distinct()
+            unique_senders.update(sender_ids)
+        
+        unread_count = len(unique_senders)
+        
+        return Response({
+            'success': True,
+            'unread_count': unread_count
+        })
+        
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e),
+            'unread_count': 0
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_room_messages_read(request):
+    """Oda açıldığında tüm mesajları okundu olarak işaretle"""
+    try:
+        room_id = request.data.get('room_id')
+        if not room_id:
+            return Response({'error': 'room_id required'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        from messaging.models import ChatRoom, Message, MessageRead
+        
+        room = get_object_or_404(ChatRoom, id=room_id, is_active=True)
+        
+        # Kullanıcı bu odanın katılımcısı mı kontrol et
+        if not room.participants.filter(id=request.user.id).exists():
+            return Response({'error': 'Not a participant'}, 
+                          status=status.HTTP_403_FORBIDDEN)
+        
+        # Bu odadaki, kullanıcının göndermediği tüm mesajları okundu olarak işaretle
+        unread_messages = Message.objects.filter(
+            room=room
+        ).exclude(
+            sender=request.user
+        )
+        
+        # Okunmuş mesajları çıkar
+        read_message_ids = MessageRead.objects.filter(
+            user=request.user,
+            message__room=room
+        ).values_list('message_id', flat=True)
+        
+        unread_messages = unread_messages.exclude(id__in=read_message_ids)
+        
+        # Okunmamış mesajları okundu olarak işaretle
+        for message in unread_messages:
+            MessageRead.objects.get_or_create(
+                message=message,
+                user=request.user
+            )
+        
+        return Response({
+            'success': True,
+            'marked_count': unread_messages.count()
         })
         
     except Exception as e:

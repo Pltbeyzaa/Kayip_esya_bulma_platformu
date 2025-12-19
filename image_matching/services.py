@@ -90,9 +90,9 @@ class MilvusService:
             # Koleksiyon oluştur
             collection = Collection(self.collection_name, schema)
             
-            # Index oluştur
+            # Index oluştur (IP metric'i normalize edilmiş vektörler için cosine similarity sağlar)
             index_params = {
-                "metric_type": "L2",
+                "metric_type": "IP",  # Inner Product (cosine similarity için)
                 "index_type": "IVF_FLAT",
                 "params": {"nlist": 1024}
             }
@@ -137,8 +137,10 @@ class MilvusService:
             collection = Collection(self.collection_name)
             collection.load()
             
+            # Normalize edilmiş vektörler için IP (Inner Product) kullan
+            # IP = cosine similarity (normalize edilmiş vektörler için)
             search_params = {
-                "metric_type": "L2",
+                "metric_type": "IP",  # Inner Product (cosine similarity için)
                 "params": {"nprobe": 10}
             }
             
@@ -153,13 +155,23 @@ class MilvusService:
             matches = []
             for hits in results:
                 for hit in hits:
+                    # IP metric: normalize edilmiş vektörler için IP = cosine similarity
+                    # Milvus IP score'u -1 ile 1 arasında değerler döner
+                    # En yüksek benzerlik için en yüksek IP değeri aranır
+                    ip_score = hit.score  # IP score (-1 ile 1 arası)
+                    
+                    # Cosine similarity'yi 0-1 aralığına normalize et
+                    # IP score zaten cosine similarity (normalize edilmiş vektörler için)
+                    cosine_similarity = max(0.0, min(1.0, (ip_score + 1) / 2))
+                    
                     matches.append({
                         'id': hit.entity.get('id'),
                         'user_id': hit.entity.get('user_id'),
                         'image_path': hit.entity.get('image_path'),
                         'description': hit.entity.get('description'),
-                        'distance': hit.distance,
-                        'similarity': 1 - hit.distance  # L2 distance'ı similarity'ye çevir
+                        'distance': 1 - cosine_similarity,
+                        'similarity': cosine_similarity,  # Cosine similarity (0-1 arası)
+                        'raw_ip_score': ip_score  # Debug için ham IP score
                     })
             
             return matches

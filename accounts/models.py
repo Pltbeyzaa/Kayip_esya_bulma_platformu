@@ -61,6 +61,26 @@ class ItemPost(models.Model):
     # Ekstra alanlar
     is_urgent = models.BooleanField(default=False, verbose_name="Acil")
     
+    # Kayıp çocuk ilanları için özel alanlar
+    is_missing_child = models.BooleanField(default=False, verbose_name="Kayıp Çocuk İlanı")
+    child_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="Çocuğun Adı")
+    child_age = models.IntegerField(blank=True, null=True, verbose_name="Yaş")
+    child_gender = models.CharField(
+        max_length=10,
+        choices=[('erkek', 'Erkek'), ('kız', 'Kız')],
+        blank=True,
+        null=True,
+        verbose_name="Cinsiyet"
+    )
+    child_height = models.IntegerField(blank=True, null=True, verbose_name="Boy (cm)")
+    child_weight = models.IntegerField(blank=True, null=True, verbose_name="Kilo (kg)")
+    child_hair_color = models.CharField(max_length=50, blank=True, null=True, verbose_name="Saç Rengi")
+    child_eye_color = models.CharField(max_length=50, blank=True, null=True, verbose_name="Göz Rengi")
+    child_physical_features = models.TextField(blank=True, null=True, verbose_name="Fiziksel Özellikler")
+    missing_date = models.DateField(blank=True, null=True, verbose_name="Kaybolma Tarihi")
+    last_seen_location = models.CharField(max_length=200, blank=True, null=True, verbose_name="Son Görüldüğü Yer")
+    last_seen_clothing = models.TextField(blank=True, null=True, verbose_name="Son Görüldüğünde Üzerindeki Kıyafetler")
+    
     class Meta:
         db_table = 'accounts_itempost'
         ordering = ['-created_at']

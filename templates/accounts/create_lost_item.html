@@ -9,10 +9,12 @@
         <div class="card shadow" style="background: var(--dark-surface); border: 1px solid var(--border-color); border-radius: 16px;">
             <div class="card-header text-center" style="background: var(--dark-surface-light); border-bottom: 1px solid var(--border-color); padding: 1.5rem;">
                 <h4 class="mb-0 text-primary-green">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Kayıp Eşya İlanı Oluştur
+                    <i class="fas {% if is_animal %}fa-paw{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+                    {% if is_animal %}Kayıp Hayvan İlanı Oluştur{% else %}Kayıp Eşya İlanı Oluştur{% endif %}
                 </h4>
-                <p class="mb-0 mt-2" style="font-size: 0.9rem; color: var(--text-secondary);">Kayıp eşyanızı bulmak için detaylı bilgi verin</p>
+                <p class="mb-0 mt-2" style="font-size: 0.9rem; color: var(--text-secondary);">
+                    {% if is_animal %}Kayıp hayvanınızı bulmak için detaylı bilgi verin{% else %}Kayıp eşyanızı bulmak için detaylı bilgi verin{% endif %}
+                </p>
             </div>
             <div class="card-body p-4">
                 <form method="post" enctype="multipart/form-data" id="lostItemForm">
@@ -20,7 +22,7 @@
                     
                     <!-- Başlık -->
                     <div class="mb-4">
-                        <label for="{{ form.title.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">
                             <i class="fas fa-heading me-2"></i>Başlık <span class="text-danger">*</span>
                         </label>
                         {{ form.title }}
@@ -31,38 +33,69 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Örn: Kayıp Telefon - İzmir Konak</div>
+                        <div class="form-text">{% if is_animal %}Örn: Kayıp Köpek - İzmir Konak{% else %}Örn: Kayıp Telefon - İzmir Konak{% endif %}</div>
                     </div>
                     
+                    {% if is_animal %}
+                    <!-- Hayvan Türü ve Özellikler -->
+                    <input type="hidden" name="main_category" value="animals">
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-paw me-2"></i>Hayvan Bilgileri
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="animal_type" class="form-label sub-label">Hayvan Türü <span class="text-danger">*</span></label>
+                                <select name="sub_category" id="animal_type" class="form-select" required>
+                                    <option value="">Hayvan türü seçiniz</option>
+                                    <option value="Köpek">Köpek</option>
+                                    <option value="Kedi">Kedi</option>
+                                    <option value="Kuş">Kuş</option>
+                                    <option value="Tavşan">Tavşan</option>
+                                    <option value="Hamster">Hamster</option>
+                                    <option value="Balık">Balık</option>
+                                    <option value="Kaplumbağa">Kaplumbağa</option>
+                                    <option value="Diğer">Diğer</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.color.id_for_label }}" class="form-label sub-label">Renk</label>
+                                {{ form.color }}
+                            </div>
+                        </div>
+                        <div class="form-text">Hayvan bilgileri kayıtta açıklamaya eklenecektir.</div>
+                    </div>
+                    {% else %}
                     <!-- Kategori / Özellikler -->
                     <div class="mb-4">
-                        <label class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                        <label class="form-label">
                             <i class="fas fa-tags me-2"></i>İlan Kategorisi ve Özellikleri
                         </label>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="{{ form.main_category.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Kategori</label>
+                                <label for="{{ form.main_category.id_for_label }}" class="form-label sub-label">Kategori</label>
                                 {{ form.main_category }}
                             </div>
                             <div class="col-md-6">
-                                <label for="{{ form.sub_category.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Alt Kategori</label>
+                                <label for="{{ form.sub_category.id_for_label }}" class="form-label sub-label">Alt Kategori</label>
                                 {{ form.sub_category }}
                             </div>
                             <div class="col-md-6">
-                                <label for="{{ form.brand.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Marka</label>
+                                <label for="{{ form.brand.id_for_label }}" class="form-label sub-label">Marka</label>
                                 {{ form.brand }}
                             </div>
                             <div class="col-md-6">
-                                <label for="{{ form.color.id_for_label }}" class="form-label" style="color: var(--text-secondary);">Renk</label>
+                                <label for="{{ form.color.id_for_label }}" class="form-label sub-label">Renk</label>
                                 {{ form.color }}
                             </div>
                         </div>
-                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Kategori bilgileri kayıtta açıklamaya eklenecektir.</div>
+                        <div class="form-text">Kategori bilgileri kayıtta açıklamaya eklenecektir.</div>
                     </div>
+                    {% endif %}
 
                     <!-- Açıklama -->
                     <div class="mb-4">
-                        <label for="{{ form.description.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
                             <i class="fas fa-align-left me-2"></i>Açıklama <span class="text-danger">*</span>
                         </label>
                         {{ form.description }}
@@ -73,13 +106,19 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Eşyanız hakkında detaylı bilgi veriniz (renk, marka, model, özellikler vb.)</div>
+                        <div class="form-text">
+                            {% if is_animal %}
+                            Hayvanınız hakkında detaylı bilgi veriniz (tür, cinsiyet, yaş, renk, özellikler, kaybolduğu yer ve zaman vb.)
+                            {% else %}
+                            Eşyanız hakkında detaylı bilgi veriniz (renk, marka, model, özellikler vb.)
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <!-- Şehir ve İlçe -->
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <label for="{{ form.city.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <label for="{{ form.city.id_for_label }}" class="form-label">
                                 <i class="fas fa-city me-2"></i>Şehir <span class="text-danger">*</span>
                             </label>
                             {{ form.city }}
@@ -92,7 +131,7 @@
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-4">
-                            <label for="{{ form.district.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <label for="{{ form.district.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">
                                 <i class="fas fa-map-marker-alt me-2"></i>İlçe
                             </label>
                             {{ form.district }}
@@ -109,7 +148,7 @@
                     <!-- Mahalle -->
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <label for="{{ form.neighborhood.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <label for="{{ form.neighborhood.id_for_label }}" class="form-label">
                                 <i class="fas fa-street-view me-2"></i>Mahalle
                             </label>
                             {{ form.neighborhood }}
@@ -118,7 +157,7 @@
                     
                     <!-- Konum -->
                     <div class="mb-4">
-                        <label for="{{ form.location.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                        <label for="{{ form.location.id_for_label }}" class="form-label">
                             <i class="fas fa-map-pin me-2"></i>Konum <span class="text-danger">*</span>
                         </label>
                         {{ form.location }}
@@ -129,13 +168,29 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Örn: Konak Meydanı, Kadıköy Sahil, Taksim Meydanı</div>
+                        <div class="form-text">Örn: Konak Meydanı, Kadıköy Sahil, Taksim Meydanı</div>
+                        
+                        <!-- Google Maps Haritası -->
+                        {% if google_maps_api_key %}
+                        <div class="mt-3">
+                            <label class="form-label">
+                                <i class="fas fa-map me-2"></i>Haritadan Konum Seçin
+                            </label>
+                            <div class="mb-2">
+                                <input type="text" id="address-search" class="form-control" placeholder="Adres ara..." style="background: var(--dark-surface-light) !important; border: 1px solid var(--border-color) !important; color: var(--text-primary) !important;">
+                            </div>
+                            <div id="map" style="width: 100%; height: 300px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);"></div>
+                            <div class="form-text mt-2">
+                                Haritaya tıklayarak veya adres arayarak konum seçebilirsiniz
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <!-- İletişim Bilgileri -->
                     <div class="row">
                         <div class="col-md-6 mb-4">
-                            <label for="{{ form.contact_phone.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <label for="{{ form.contact_phone.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">
                                 <i class="fas fa-phone me-2"></i>İletişim Telefonu <span class="text-danger">*</span>
                             </label>
                             {{ form.contact_phone }}
@@ -148,7 +203,7 @@
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-4">
-                            <label for="{{ form.contact_email.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
+                            <label for="{{ form.contact_email.id_for_label }}" class="form-label">
                                 <i class="fas fa-envelope me-2"></i>İletişim E-posta
                             </label>
                             {{ form.contact_email }}
@@ -164,8 +219,8 @@
                     
                     <!-- Fotoğraf -->
                     <div class="mb-4">
-                        <label for="{{ form.image.id_for_label }}" class="form-label" style="color: var(--text-primary); font-weight: 600;">
-                            <i class="fas fa-image me-2"></i>Eşya Fotoğrafı
+                        <label for="{{ form.image.id_for_label }}" class="form-label">
+                            <i class="fas fa-image me-2"></i>{% if is_animal %}Hayvan Fotoğrafı{% else %}Eşya Fotoğrafı{% endif %}
                         </label>
                         {{ form.image }}
                         {% if form.image.errors %}
@@ -175,14 +230,14 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Eşyanızın fotoğrafını yükleyiniz (JPG, PNG - Maksimum 5MB)</div>
+                        <div class="form-text">{% if is_animal %}Hayvanınızın fotoğrafını yükleyiniz (JPG, PNG - Maksimum 5MB){% else %}Eşyanızın fotoğrafını yükleyiniz (JPG, PNG - Maksimum 5MB){% endif %}</div>
                     </div>
                     
                     <!-- Acil İlan -->
                     <div class="mb-4">
                         <div class="form-check">
                             {{ form.is_urgent }}
-                            <label class="form-check-label" for="{{ form.is_urgent.id_for_label }}" style="color: var(--text-primary);">
+                            <label class="form-check-label" for="{{ form.is_urgent.id_for_label }}">
                                 <i class="fas fa-fire me-2 text-warning"></i>Acil İlan olarak işaretle
                             </label>
                         </div>
@@ -193,7 +248,7 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text" style="color: var(--text-secondary); opacity: 0.9;">Önemli eşyalar için acil ilan olarak işaretleyebilirsiniz</div>
+                        <div class="form-text">Önemli eşyalar için acil ilan olarak işaretleyebilirsiniz</div>
                     </div>
                     
                     <!-- Form Hataları -->
@@ -221,55 +276,123 @@
 </div>
 
 <style>
-.card {
-    background: var(--dark-surface) !important;
-    border: 1px solid var(--border-color) !important;
+.card { 
+    background: var(--dark-surface) !important; 
+    border: 1px solid var(--border-color) !important; 
 }
 
-.form-control, .form-select {
+.card-header {
     background: var(--dark-surface-light) !important;
-    border: 1px solid var(--border-color) !important;
-    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
 }
 
-.form-text {
+.card-header h4 {
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 1.5rem !important;
+}
+
+.card-header p {
     color: var(--text-secondary) !important;
-    opacity: 0.9 !important;
-    font-size: 0.875rem !important;
-    margin-top: 0.5rem !important;
+    opacity: 1 !important;
+    font-size: 1rem !important;
 }
 
-.form-control:focus, .form-select:focus {
-    background: var(--dark-surface-light) !important;
-    border-color: var(--primary-green) !important;
+.form-label {
     color: var(--text-primary) !important;
-    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25) !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.75rem !important;
+    display: block !important;
+    font-size: 1.05rem !important;
+}
+
+.form-control, .form-select { 
+    background: var(--dark-surface-light) !important; 
+    border: 1px solid var(--border-color) !important; 
+    color: var(--text-primary) !important;
+    font-size: 1rem !important;
+    padding: 0.75rem 1rem !important;
+    line-height: 1.5 !important;
 }
 
 .form-control::placeholder {
     color: var(--text-secondary) !important;
-    opacity: 0.7 !important;
+    opacity: 1 !important;
+    font-size: 1rem !important;
+}
+
+.form-control:focus, .form-select:focus { 
+    background: var(--dark-surface-light) !important; 
+    border-color: var(--primary-green) !important; 
+    color: var(--text-primary) !important; 
+    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25) !important; 
+    outline: none !important;
+    border-width: 2px !important;
+}
+
+.form-text {
+    color: var(--text-secondary) !important;
+    opacity: 1 !important;
+    font-size: 0.95rem !important;
+    margin-top: 0.75rem !important;
+    line-height: 1.6 !important;
+    font-weight: 400 !important;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
 }
 
 .form-check-input {
-    background-color: var(--dark-surface-light);
-    border: 1px solid var(--border-color);
+    background-color: var(--dark-surface-light) !important;
+    border: 1px solid var(--border-color) !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    margin-top: 0.25rem !important;
 }
 
 .form-check-input:checked {
-    background-color: var(--primary-green);
-    border-color: var(--primary-green);
+    background-color: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
 }
 
-.btn-outline-secondary {
-    border-color: var(--border-color);
-    color: var(--text-secondary);
+.form-check-label {
+    color: var(--text-primary) !important;
+    margin-left: 0.5rem !important;
+    cursor: pointer !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
 }
 
-.btn-outline-secondary:hover {
-    background: var(--dark-surface-light);
-    border-color: var(--border-color);
-    color: var(--text-primary);
+.btn-outline-secondary { 
+    border-color: var(--border-color) !important; 
+    color: var(--text-secondary) !important;
+    background: transparent !important;
+    font-size: 1rem !important;
+    padding: 0.625rem 1.5rem !important;
+}
+
+.btn-outline-secondary:hover { 
+    background: var(--dark-surface-light) !important; 
+    border-color: var(--border-color) !important; 
+    color: var(--text-primary) !important; 
+}
+
+.btn-success {
+    background: var(--primary-green) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0.625rem 1.5rem !important;
+    font-size: 1rem !important;
+}
+
+.btn-success:hover {
+    background: #059669 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 /* Select içindeki açılır liste okunaklı olsun (sistem beyaz zeminde açtığı için) */
@@ -277,9 +400,47 @@
     background: #ffffff !important;
     color: #111111 !important;
 }
+
+/* Form alanları arası boşluk */
+.mb-4 {
+    margin-bottom: 2rem !important;
+}
+
+/* Textarea için özel stil */
+textarea.form-control {
+    min-height: 120px !important;
+    resize: vertical !important;
+}
+
+/* Kategori alt label'ları */
+.form-label.sub-label {
+    color: var(--text-secondary) !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
+    margin-bottom: 0.5rem !important;
+}
 </style>
 <script src="{% static 'js/city_districts.js' %}"></script>
 <script>
+// Hayvan ilanları için placeholder'ları güncelle
+{% if is_animal %}
+document.addEventListener('DOMContentLoaded', function() {
+  const titleInput = document.getElementById('{{ form.title.id_for_label }}');
+  const descInput = document.getElementById('{{ form.description.id_for_label }}');
+  const colorInput = document.getElementById('{{ form.color.id_for_label }}');
+  
+  if (titleInput) {
+    titleInput.setAttribute('placeholder', 'Örn: Kayıp Köpek - İzmir Konak');
+  }
+  if (descInput) {
+    descInput.setAttribute('placeholder', 'Hayvanınız hakkında detaylı bilgi veriniz (ırk, cinsiyet, yaş, özellikler, kaybolduğu yer ve zaman vb.)');
+  }
+  if (colorInput) {
+    colorInput.setAttribute('placeholder', 'Örn: Siyah, Beyaz, Kahverengi');
+  }
+});
+{% else %}
 // Ana kategoriye göre alt kategori öneri placeholder'ını değiştir
 document.addEventListener('DOMContentLoaded', function() {
   const mainCat = document.getElementById('mainCategory');
@@ -290,6 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
     'accessories': 'Örn: Cüzdan, Gözlük, Saat',
     'documents': 'Örn: Kimlik, Ehliyet, Pasaport',
     'clothing': 'Örn: Mont, Çanta, Ayakkabı',
+    'animals': 'Örn: Köpek, Kedi, Kuş',
     'others': 'Örn: Anahtar, Diğer'
   };
   mainCat.addEventListener('change', function(){
@@ -297,6 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (subInput) subInput.setAttribute('placeholder', ph);
   });
 });
+{% endif %}
 
 // Şehre göre ilçe seçimi (şehir dropdownu gibi)
 document.addEventListener('DOMContentLoaded', function() {
@@ -326,6 +489,183 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDistricts();
   }
 });
+
+{% if google_maps_api_key %}
+// Google Maps entegrasyonu
+let map;
+let marker;
+let geocoder;
+let autocomplete;
+
+// initMap'i global olarak tanımla (callback için)
+window.initMap = function() {
+    // Harita başlangıç konumu (Türkiye merkezi)
+    const defaultLocation = { lat: 39.9334, lng: 32.8597 };
+    
+    // Harita oluştur
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 10,
+        center: defaultLocation,
+        styles: [
+            {
+                featureType: "all",
+                elementType: "geometry",
+                stylers: [{ color: "#242424" }]
+            },
+            {
+                featureType: "all",
+                elementType: "labels.text.stroke",
+                stylers: [{ visibility: "off" }]
+            },
+            {
+                featureType: "all",
+                elementType: "labels.text.fill",
+                stylers: [{ color: "#ffffff" }]
+            },
+            {
+                featureType: "water",
+                elementType: "geometry",
+                stylers: [{ color: "#17263c" }]
+            }
+        ]
+    });
+    
+    geocoder = new google.maps.Geocoder();
+    
+    // Adres arama için autocomplete
+    const addressInput = document.getElementById('address-search');
+    if (addressInput) {
+        autocomplete = new google.maps.places.Autocomplete(addressInput, {
+            componentRestrictions: { country: 'tr' },
+            fields: ['formatted_address', 'geometry', 'name']
+        });
+        
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) {
+                return;
+            }
+            
+            map.setCenter(place.geometry.location);
+            map.setZoom(15);
+            
+            if (marker) {
+                marker.setPosition(place.geometry.location);
+            } else {
+                marker = new google.maps.Marker({
+                    map: map,
+                    position: place.geometry.location,
+                    draggable: true,
+                    animation: google.maps.Animation.DROP
+                });
+            }
+            
+            // Konum input'unu güncelle
+            updateLocationInput(place);
+        });
+    }
+    
+    // Haritaya tıklama ile konum seçme
+    map.addListener('click', function(event) {
+        const clickedLocation = event.latLng;
+        
+        if (marker) {
+            marker.setPosition(clickedLocation);
+        } else {
+            marker = new google.maps.Marker({
+                map: map,
+                position: clickedLocation,
+                draggable: true,
+                animation: google.maps.Animation.DROP
+            });
+        }
+        
+        // Reverse geocoding - koordinatları adrese çevir
+        geocoder.geocode({ location: clickedLocation }, function(results, status) {
+            if (status === 'OK' && results[0]) {
+                updateLocationInput(results[0]);
+            }
+        });
+    });
+    
+    // Marker sürüklendiğinde
+    if (marker) {
+        google.maps.event.addListener(marker, 'dragend', function() {
+            const position = marker.getPosition();
+            geocoder.geocode({ location: position }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    updateLocationInput(results[0]);
+                }
+            });
+        });
+    }
+}
+
+function updateLocationInput(place) {
+    const locationInput = document.getElementById('{{ form.location.id_for_label }}');
+    if (locationInput && place) {
+        // Adresin kısa versiyonunu al (sokak, mahalle, meydan vb.)
+        const addressComponents = place.address_components || [];
+        let locationText = '';
+        
+        // Önce name varsa onu kullan
+        if (place.name) {
+            locationText = place.name;
+        } else {
+            // Yoksa route, street_number, sublocality gibi bileşenleri birleştir
+            const route = addressComponents.find(c => c.types.includes('route'));
+            const sublocality = addressComponents.find(c => c.types.includes('sublocality'));
+            const neighborhood = addressComponents.find(c => c.types.includes('neighborhood'));
+            
+            if (route) {
+                locationText = route.long_name;
+            } else if (sublocality) {
+                locationText = sublocality.long_name;
+            } else if (neighborhood) {
+                locationText = neighborhood.long_name;
+            } else {
+                locationText = place.formatted_address || '';
+            }
+        }
+        
+        locationInput.value = locationText;
+    }
+};
+
+// API key kontrolü - DEBUG
+var apiKeyValue = '{{ google_maps_api_key }}';
+console.log('DEBUG: google_maps_api_key değeri:', apiKeyValue);
+console.log('DEBUG: google_maps_api_key uzunluğu:', apiKeyValue.length);
+{% if not google_maps_api_key or google_maps_api_key == '' %}
+console.error('Google Maps API key bulunamadı! Lütfen .env dosyasında GOOGLE_MAPS_API_KEY değerini kontrol edin.');
+const mapDiv = document.getElementById('map');
+if (mapDiv) {
+    mapDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #fff;"><p style="color: #ff6b6b;">Google Maps API key bulunamadı. Lütfen .env dosyasını kontrol edin.</p></div>';
+}
+{% else %}
+console.log('Google Maps API Key yüklendi:', apiKeyValue.substring(0, 10) + '...');
+// Script'i yükle
+(function() {
+    const apiKey = apiKeyValue;
+    if (!apiKey || apiKey.trim() === '' || apiKey === 'None') {
+        console.error('API key boş veya geçersiz!', apiKey);
+        return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=' + apiKey + '&libraries=places&callback=initMap';
+    script.async = true;
+    script.defer = true;
+    script.onerror = function() {
+        console.error('Google Maps API yüklenemedi. API key\'inizi kontrol edin.');
+        const mapDiv = document.getElementById('map');
+        if (mapDiv) {
+            mapDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #fff;"><p style="color: #ff6b6b;">Google Maps yüklenemedi. Lütfen API key\'inizi ve referrer ayarlarınızı kontrol edin.</p></div>';
+        }
+    };
+    document.head.appendChild(script);
+})();
+{% endif %}
+{% endif %}
 </script>
 {% endblock %}
 
