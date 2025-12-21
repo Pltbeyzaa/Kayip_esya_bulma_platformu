@@ -25,7 +25,7 @@
                     {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.GET.child_filter == 'children' %}active{% endif %}" href="{% url 'home' %}?child_filter=children">
-                            <i class="fas fa-child-reaching me-1"></i>
+                            <i class="fas fa-child me-1"></i>
                             Çocuk İlanları
                         </a>
                     </li>
