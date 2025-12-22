@@ -1,0 +1,306 @@
+<!-- DEBUG_CHAT_ROOM_LOADED_123 -->
+{% extends 'base.html' %}
+
+{% block title %}Sohbet - {{ room.name }}{% endblock %}
+
+{% block content %}
+<div style="position:fixed;top:0;left:0;z-index:9999;background:#ff0;color:#000;padding:4px;">
+  DEBUG CHAT ROOM LOADED
+</div>
+
+<div id="chat-root"
+     data-room-id="{{ room.id }}"
+     data-user-id="{{ user.id }}"
+     data-user-name="{{ user.first_name|default:user.username }}">
+</div>
+
+<div class="chat-page-wrapper mt-4">
+    <div class="chat-card">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <div class="chat-avatar">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="chat-header-text">
+                    <h5 class="chat-title">{{ room.name }}</h5>
+                    <span class="chat-subtitle">Eşleşen ilanlar için özel sohbet</span>
+                </div>
+            </div>
+            <div class="chat-header-right">
+                <span class="chat-participants">
+                    <i class="fas fa-user-friends me-1"></i>
+                    {{ room.participants.count }} katılımcı
+                </span>
+            </div>
+        </div>
+
+        <div class="chat-body">
+            {% if chat_messages %}
+                {% for msg in chat_messages %}
+                    {% if msg.is_me %}
+                        <div class="chat-row chat-row-me">
+                            <div class="chat-bubble chat-bubble-me">
+                                <div class="chat-meta">
+                                    <span class="chat-sender">Sen</span>
+                                </div>
+                                <div class="chat-content">
+                                    {{ msg.content }}
+                                </div>
+                                <div class="chat-time-small">
+                                    {{ msg.time }}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="chat-row chat-row-other">
+                            <div class="chat-bubble chat-bubble-other">
+                                <div class="chat-meta">
+                                    <span class="chat-sender">{{ msg.sender.first_name|default:msg.sender.username }}</span>
+                                </div>
+                                <div class="chat-content">
+                                    {{ msg.content }}
+                                </div>
+                                <div class="chat-time-small">
+                                    {{ msg.time }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="chat-empty">
+                    <i class="fas fa-comments chat-empty-icon"></i>
+                    <p>Henüz mesaj yok. İlk mesajı sen gönder.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="chat-input-area">
+            <form method="post" class="chat-input-form" id="chatForm">
+                {% csrf_token %}
+                <textarea
+                    name="content"
+                    id="messageInput"
+                    class="chat-input"
+                    rows="1"
+                    placeholder="Mesaj yaz..."
+                ></textarea>
+                <button type="submit" class="chat-send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if FIREBASE_API_KEY and FIREBASE_DATABASE_URL %}
+<script>
+// Firebase Real-time Messaging
+document.addEventListener('DOMContentLoaded', function() {
+    const roomId = '{{ room.id }}';
+    const userId = '{{ user.id }}';
+    const userName = '{{ user.first_name|default:user.username }}';
+    
+    // Firebase'in yüklenmesini bekle
+    function initFirebaseMessaging() {
+        if (!window.firebaseDatabase || !window.firebaseRef || !window.firebaseOnValue) {
+            setTimeout(initFirebaseMessaging, 100);
+            return;
+        }
+        
+        const { ref, onValue, push, set, serverTimestamp } = {
+            ref: window.firebaseRef,
+            onValue: window.firebaseOnValue,
+            push: window.firebasePush,
+            set: window.firebaseSet,
+            serverTimestamp: window.firebaseServerTimestamp
+        };
+        
+        const db = window.firebaseDatabase;
+        const messagesRef = ref(db, `rooms/${roomId}/messages`);
+        
+        // Oda açıldığında mesajları okundu olarak işaretle
+        fetch('{% url "mark_room_messages_read" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ room_id: roomId })
+        }).then(() => {
+            // Badge'i güncelle
+            if (window.updateUnreadCount) {
+                window.updateUnreadCount();
+            }
+        });
+        
+        // Real-time mesaj dinleme
+        let isFirstLoad = true;
+        onValue(messagesRef, (snapshot) => {
+            const messages = snapshot.val();
+            if (messages) {
+                // Firebase mesajlarını göster
+                updateChatUI(messages);
+                isFirstLoad = false;
+            } else if (isFirstLoad) {
+                // İlk yüklemede Firebase'de mesaj yoksa Django mesajlarını göster
+                // Django mesajları zaten sayfada render edilmiş durumda
+                isFirstLoad = false;
+            }
+        });
+        
+        // Mesaj gönderme formu
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const content = messageInput.value.trim();
+            if (!content) return;
+            
+            // Firebase'e mesaj gönder
+            const newMessageRef = push(messagesRef);
+            set(newMessageRef, {
+                sender_id: String(userId),
+                sender_name: userName,
+                content: content,
+                created_at: serverTimestamp(),
+                message_type: 'text'
+            }).then(() => {
+                // Django'ya da gönder (backup için)
+                fetch(chatForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `content=${encodeURIComponent(content)}`
+                });
+                
+                messageInput.value = '';
+                scrollToBottom();
+            });
+        });
+        
+        // Enter tuşu ile gönder
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+   
+         
+{% endblock %}
+{% block extra_js %}
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  onChildAdded,
+  serverTimestamp,
+  query,
+  limitToLast
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const root = document.getElementById("chat-root");
+  const roomId = root?.dataset.roomId;
+  const userId = root?.dataset.userId;
+  const userName = root?.dataset.userName || "Kullanıcı";
+
+  if (!roomId) {
+    console.error("❌ chat-root/roomId yok");
+    return;
+  }
+
+  // Firebase config (Django context'ten geliyor)
+  const firebaseConfig = {
+    apiKey: "{{ FIREBASE_API_KEY }}",
+    authDomain: "{{ FIREBASE_AUTH_DOMAIN }}",
+    databaseURL: "{{ FIREBASE_DATABASE_URL }}",
+    projectId: "{{ FIREBASE_PROJECT_ID }}",
+    storageBucket: "{{ FIREBASE_STORAGE_BUCKET }}",
+    messagingSenderId: "{{ FIREBASE_MESSAGING_SENDER_ID }}",
+    appId: "{{ FIREBASE_APP_ID }}",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // ✅ Buradaki path, backend'in yazdığı path ile aynı olmalı
+  const messagesRef = ref(db, `rooms/${roomId}/messages`);
+  const q = query(messagesRef, limitToLast(200));
+
+  // Aynı mesaj iki kere basılmasın
+  const rendered = new Set();
+
+  // ✅ Realtime dinle: yeni mesaj gelince otomatik ekle
+  onChildAdded(q, (snap) => {
+    const msg = snap.val() || {};
+    const id = snap.key;
+
+    if (rendered.has(id)) return;
+    rendered.add(id);
+
+    appendMessage(msg);
+    scrollToBottom();
+  });
+
+  // ✅ Formu yakala ve sayfayı yenilemeden gönder
+  const form = document.querySelector("form");
+  const input = document.querySelector("input[name='content'], textarea[name='content']");
+
+  if (form && input) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const text = (input.value || "").trim();
+      if (!text) return;
+
+      // ✅ Mesajı RTDB'ye yaz
+      await push(messagesRef, {
+        content: text,
+        sender_id: String(userId),
+        sender_name: String(userName),
+        created_at: serverTimestamp(),
+        message_type: "text",
+      });
+
+      input.value = "";
+    });
+  }
+
+  function appendMessage(msg) {
+    const chatBody = document.querySelector(".chat-body");
+    if (!chatBody) return;
+
+    const isMe = String(msg.sender_id) === String(userId);
+
+    const row = document.createElement("div");
+    row.className = isMe ? "chat-row chat-row-me" : "chat-row chat-row-other";
+
+    row.innerHTML = `
+      <div class="chat-bubble ${isMe ? "chat-bubble-me" : "chat-bubble-other"}">
+        <div class="chat-meta">
+          <span class="chat-sender">${isMe ? "Sen" : escapeHtml(msg.sender_name || "Kullanıcı")}</span>
+        </div>
+        <div class="chat-content">${escapeHtml(msg.content || "")}</div>
+      </div>
+    `;
+
+    chatBody.appendChild(row);
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function scrollToBottom() {
+    const chatBody = document.querySelector(".chat-body");
+    if (!chatBody) return;
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+});
+</script>
+{% endblock %}
