@@ -148,3 +148,6 @@ static/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Docker runtime volumes
+volumes/
